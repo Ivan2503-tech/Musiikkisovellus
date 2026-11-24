@@ -1,0 +1,747 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musiikkisovellus</title>
+    <link rel="stylesheet" href="{% static 'apply/style.css' %}">
+</head>
+
+<body class="music-home">
+
+    <aside class="music-sidebar">
+        <a href="{% url 'inicio' %}" class="sidebar-brand">
+            <span class="brand-symbol">M</span>
+            <span>Musiikkisovellus</span>
+        </a>
+
+        <nav class="sidebar-nav">
+            <a href="#inicio" class="sidebar-link active">
+                <span class="nav-icon">◆</span> Inicio
+            </a>
+            <a href="#canciones" class="sidebar-link">
+                <span class="nav-icon">♫</span> Mi música
+            </a>
+        </nav>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-library">
+            <p class="sidebar-label">TU BIBLIOTECA</p>
+
+            <a href="#canciones" class="sidebar-link">
+                <span class="nav-icon">▤</span> Todas las canciones
+            </a>
+
+            <a href="{% url 'mis_favoritos' %}" class="sidebar-link">
+                <span class="nav-icon">♥</span> Mis favoritos
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <p class="sidebar-label">PLAYLISTS</p>
+
+            <button type="button" class="create-playlist-button" id="open-playlist-modal">
+                + CREAR PLAYLIST
+            </button>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-divider"></div>
+
+            <div class="sidebar-user">
+                <div class="user-avatar">{{ user.username|first|upper }}</div>
+                <div class="user-details">
+                    <span class="user-name">{{ user.username }}</span>
+                    <a href="{% url 'mi_perfil' %}">Ver perfil</a>
+                </div>
+            </div>
+
+            {% if user.is_staff %}
+            <a href="{% url 'cuentas' %}" class="sidebar-admin">
+                Administrar cuentas
+            </a>
+
+            <a href="{% url 'administrar_musica' %}" class="sidebar-admin">
+                Administrar música
+            </a>
+            {% endif %}
+
+            <form method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="sidebar-logout">
+                    ↪ Cerrar sesión
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="music-main" id="inicio">
+
+        <header class="music-topbar">
+            <div class="topbar-arrows">
+                <span>01</span>
+                <span class="topbar-slash">/</span>
+                <span>PHANTOM SOUND</span>
+            </div>
+
+            <div class="search-wrapper">
+                <label class="music-search">
+                    <span>⌕</span>
+                    <input type="search" id="song-search" placeholder="Buscar canción o artista..."
+                        aria-label="Buscar canción o artista" autocomplete="off">
+                </label>
+
+                <div class="search-results" id="search-results" hidden>
+                    <p class="search-results-title">RESULTADOS DE BÚSQUEDA</p>
+                    <div id="search-results-list"></div>
+                </div>
+            </div>
+        </header>
+
+        <section class="music-hero">
+            <div class="hero-content">
+                <p class="hero-eyebrow">TU MÚSICA. TUS REGLAS.</p>
+                <h1>TUNNE <br><span>MUSIIKKI.</span></h1>
+                <p class="hero-description">
+                    Tu colección musical, a tu manera.
+                    Elige una canción y deja que comience la experiencia.
+                </p>
+                <a href="#canciones" class="hero-button">
+                    EXPLORAR CANCIONES <span>↘</span>
+                </a>
+            </div>
+
+            <div class="hero-stamp">
+                <span>PLAY</span>
+                <strong>YOUR</strong>
+                <span>OWN WAY</span>
+                <div class="stamp-star">★</div>
+            </div>
+        </section>
+
+        <section class="music-library" id="canciones">
+            <div class="section-heading">
+                <div>
+                    <p class="section-eyebrow">TU COLECCIÓN</p>
+                    <h2>Explora tu <span>música.</span></h2>
+                </div>
+                <span class="song-count" id="song-count">
+                    {{ canciones_db|length|add:14 }} TRACKS
+                </span>
+            </div>
+
+            <div class="library-columns">
+
+                <section class="library-panel">
+                    <div class="library-panel-heading">
+                        <h3>♫ Canciones</h3>
+                        <span>TODA TU MÚSICA</span>
+                    </div>
+
+                    <div class="library-scroll">
+                        <div class="song-grid" id="song-grid">
+
+                            <a href="{% url 'reproductor' 'find-your-flame' %}" class="cancion music-card"
+                                data-title="Find Your Flame" data-artist="SEGA SOUND TEAM Kellin Quinn Tyler Smyth">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/find_your_flame.jpg' %}" alt="Find Your Flame">
+                                    <span class="card-number">01</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Find Your Flame</h2>
+                                    <p>SEGA SOUND TEAM • Kellin Quinn • Tyler Smyth</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'break-through-it-all' %}" class="cancion music-card"
+                                data-title="Break Through It All" data-artist="SEGA SOUND TEAM Kellin Quinn">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/find_your_flame.jpg' %}" alt="Break Through It All">
+                                    <span class="card-number">02</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Break Through It All</h2>
+                                    <p>SEGA SOUND TEAM • Kellin Quinn</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'breaking-the-habit' %}" class="cancion music-card"
+                                data-title="Breaking the Habit" data-artist="Linkin Park">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/Linkin_Park.jpg' %}" alt="Breaking the Habit">
+                                    <span class="card-number">03</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Breaking the Habit</h2>
+                                    <p>Linkin Park</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'bring-me-to-life' %}" class="cancion music-card"
+                                data-title="Bring Me to Life" data-artist="Evanescence">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/Evanescence.jpg' %}" alt="Bring Me to Life">
+                                    <span class="card-number">04</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Bring Me to Life</h2>
+                                    <p>Evanescence</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'bodies' %}" class="cancion music-card" data-title="Bodies"
+                                data-artist="Drowning Pool">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/Drowning_Pool.jpg' %}" alt="Bodies">
+                                    <span class="card-number">05</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Bodies</h2>
+                                    <p>Drowning Pool</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'colors-flying-high' %}" class="cancion music-card"
+                                data-title="Colors Flying High" data-artist="Lyn">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/Persona_5.jpg' %}" alt="Colors Flying High">
+                                    <span class="card-number">06</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Colors Flying High</h2>
+                                    <p>Lyn</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'come-alive' %}" class="cancion music-card"
+                                data-title="Come Alive" data-artist="San-Z">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/come_alive.jpg' %}" alt="Come Alive">
+                                    <span class="card-number">07</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Come Alive</h2>
+                                    <p>Sān-Z</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'dare' %}" class="cancion music-card" data-title="Dare"
+                                data-artist="Gorillaz">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/Gorillaz.jpg' %}" alt="Dare">
+                                    <span class="card-number">08</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Dare</h2>
+                                    <p>Gorillaz</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'Lions' %}" class="cancion music-card" data-title="Lions"
+                                data-artist="Skillet">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/Unleashed.jpg' %}" alt="Lions">
+                                    <span class="card-number">09</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Lions</h2>
+                                    <p>Skillet</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'Feel-Invincible' %}" class="cancion music-card"
+                                data-title="Feel Invincible" data-artist="Skillet">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/Unleashed.jpg' %}" alt="Feel Invincible">
+                                    <span class="card-number">10</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Feel Invincible</h2>
+                                    <p>Skillet</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'Afterlife' %}" class="cancion music-card"
+                                data-title="Afterlife" data-artist="Evanescence">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/DMC_afterlife.jpg' %}" alt="Afterlife">
+                                    <span class="card-number">11</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Afterlife</h2>
+                                    <p>Evanescence</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'Heaven' %}" class="cancion music-card" data-title="Heaven"
+                                data-artist="Atlus Shihoko Hirata">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/Golden.jpg' %}" alt="Heaven">
+                                    <span class="card-number">12</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Heaven</h2>
+                                    <p>Atlus • Shihoko Hirata</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'ColorYourNight' %}" class="cancion music-card"
+                                data-title="Color Your Night" data-artist="Atlus Azumi Takahashi Lotus Juice">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/Reload.jpg' %}" alt="Color Your Night">
+                                    <span class="card-number">13</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>Color Your Night</h2>
+                                    <p>Atlus • Azumi Takahashi • Lotus Juice</p>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'reproductor' 'A-Little-Faster' %}" class="cancion music-card"
+                                data-title="A Little Faster" data-artist="There For Tomorrow">
+                                <div class="card-cover">
+                                    <img src="{% static 'apply/img/There.jpg' %}" alt="A Little Faster">
+                                    <span class="card-number">14</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>A Little Faster</h2>
+                                    <p>There For Tomorrow</p>
+                                </div>
+                            </a>
+
+                            {% for cancion in canciones_db %}
+                            <a href="{% url 'reproductor' cancion.slug %}" class="cancion music-card"
+                                data-title="{{ cancion.nombre }}" data-artist="{{ cancion.artista }}">
+                                <div class="card-cover">
+                                    <img src="{{ cancion.imagen.url }}" alt="{{ cancion.nombre }}">
+                                    <span class="card-number">{{ forloop.counter|add:14|stringformat:"02d" }}</span>
+                                    <span class="play">▶</span>
+                                </div>
+                                <div class="info">
+                                    <h2>{{ cancion.nombre }}</h2>
+                                    <p>{{ cancion.artista }}</p>
+                                </div>
+                            </a>
+                            {% endfor %}
+
+                        </div>
+
+                        <p class="no-results" id="no-results" hidden>
+                            NO SE ENCONTRARON CANCIONES. INTENTA OTRA BÚSQUEDA.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="library-panel">
+                    <div class="library-panel-heading">
+                        <h3>♫ Mis playlists</h3>
+                        <span>{{ playlists|length }} LISTAS</span>
+                    </div>
+
+                    <div class="library-scroll">
+                        <div class="playlist-list">
+                            {% for playlist in playlists %}
+                            <a href="{% url 'ver_playlist' playlist.id %}" class="playlist-card">
+                                <div class="playlist-cover">♫</div>
+                                <div class="playlist-information">
+                                    <h4>{{ playlist.nombre }}</h4>
+                                    <p>{{ playlist.descripcion|default:"Mi colección personal" }}</p>
+                                </div>
+                                <span class="playlist-arrow">›</span>
+                            </a>
+                            {% empty %}
+                            <div class="playlist-empty">
+                                <span class="playlist-empty-icon">♫</span>
+                                <p>Todavía no tienes playlists.</p>
+                                <p>¡Crea tu primera colección musical!</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="button" class="playlist-create-inline" id="open-playlist-modal-secondary">
+                            + CREAR NUEVA PLAYLIST
+                        </button>
+                    </div>
+                </section>
+
+            </div>
+        </section>
+
+        <footer class="music-footer">
+            <span>MUSIIKKISOVELLUS ©</span>
+            <span>MADE TO FEEL THE MUSIC <strong>★</strong></span>
+        </footer>
+    </main>
+
+    <div class="playlist-modal" id="playlist-modal" aria-hidden="true">
+        <div class="playlist-modal-content" role="dialog" aria-modal="true" aria-labelledby="playlist-modal-title">
+            <button type="button" class="playlist-modal-close" id="close-playlist-modal" aria-label="Cerrar">
+                ×
+            </button>
+
+            <p class="playlist-modal-eyebrow">TU BIBLIOTECA PERSONAL</p>
+            <h2 id="playlist-modal-title">Nueva playlist</h2>
+            <p class="playlist-modal-description">
+                Crea una colección con las canciones que más te gustan.
+            </p>
+
+            <form method="POST" action="{% url 'crear_playlist' %}">
+                {% csrf_token %}
+
+                <div class="playlist-form-group">
+                    <label for="playlist-name">NOMBRE DE LA PLAYLIST</label>
+                    <input type="text" id="playlist-name" name="nombre" placeholder="Ej. Mis canciones favoritas"
+                        maxlength="100" required>
+                </div>
+
+                <div class="playlist-form-group">
+                    <label for="playlist-description">DESCRIPCIÓN</label>
+                    <input type="text" id="playlist-description" name="descripcion" placeholder="Descripción opcional"
+                        maxlength="250">
+                </div>
+
+                <button type="submit" class="playlist-modal-submit">
+                    CREAR PLAYLIST
+                </button>
+
+                <button type="button" class="playlist-modal-cancel" id="cancel-playlist-modal">
+                    CANCELAR
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="mini-player" role="link" tabindex="0" aria-label="Abrir el reproductor de música">
+
+        <div class="mini-info">
+            <span class="mini-label">REPRODUCIENDO</span>
+            <span id="mini-title">Ninguna canción</span>
+        </div>
+
+        <button id="mini-play" aria-label="Reproducir o pausar">▶</button>
+
+        <div class="mini-progress-wrap">
+            <span class="mini-live">NOW PLAYING</span>
+            <input type="range" id="mini-progress" min="0" max="100" value="0" aria-label="Progreso de la canción">
+        </div>
+
+        <span id="mini-time">0:00</span>
+        <audio id="mini-audio"></audio>
+    </div>
+
+    <script>
+        const audio = document.getElementById("mini-audio");
+        const playButton = document.getElementById("mini-play");
+        const progress = document.getElementById("mini-progress");
+        const title = document.getElementById("mini-title");
+        const time = document.getElementById("mini-time");
+        const miniPlayer = document.getElementById("mini-player");
+
+        const savedAudio = localStorage.getItem("musicAudio");
+        const savedTitle = localStorage.getItem("musicTitle");
+        const savedTime = localStorage.getItem("musicTime");
+        const savedPlaying = localStorage.getItem("musicPlaying");
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60)
+                .toString()
+                .padStart(2, "0");
+
+            return minutes + ":" + remainingSeconds;
+        }
+
+        if (savedTitle) {
+            title.textContent = savedTitle;
+        }
+
+        if (savedAudio) {
+            audio.src = savedAudio;
+
+            audio.addEventListener("loadedmetadata", function () {
+                const position = parseFloat(savedTime);
+
+                if (savedTime !== null && Number.isFinite(position)) {
+                    audio.currentTime = Math.min(
+                        Math.max(position, 0),
+                        audio.duration || 0
+                    );
+                }
+
+                progress.value = audio.duration
+                    ? (audio.currentTime / audio.duration) * 100
+                    : 0;
+
+                time.textContent = formatTime(audio.currentTime);
+            }, { once: true });
+
+            if (savedPlaying === "true") {
+                audio.play().then(() => {
+                    playButton.textContent = "Ⅱ";
+                }).catch(() => {
+                    playButton.textContent = "▶";
+                });
+            }
+        }
+
+        playButton.addEventListener("click", function () {
+            if (audio.paused) {
+                if (!audio.src) return;
+
+                audio.play().then(() => {
+                    localStorage.setItem("musicPlaying", "true");
+                    playButton.textContent = "Ⅱ";
+                }).catch(() => {
+                    playButton.textContent = "▶";
+                });
+            } else {
+                audio.pause();
+                localStorage.setItem("musicPlaying", "false");
+                playButton.textContent = "▶";
+            }
+        });
+
+        audio.addEventListener("play", function () {
+            localStorage.setItem("musicPlaying", "true");
+            playButton.textContent = "Ⅱ";
+        });
+
+        audio.addEventListener("pause", function () {
+            localStorage.setItem("musicPlaying", "false");
+            localStorage.setItem("musicTime", String(audio.currentTime));
+            playButton.textContent = "▶";
+        });
+
+        audio.addEventListener("timeupdate", function () {
+            if (audio.duration) {
+                progress.value = (audio.currentTime / audio.duration) * 100;
+            }
+
+            time.textContent = formatTime(audio.currentTime);
+            localStorage.setItem("musicTime", String(audio.currentTime));
+        });
+
+        progress.addEventListener("input", function () {
+            if (audio.duration) {
+                audio.currentTime = (progress.value / 100) * audio.duration;
+            }
+        });
+
+        const searchInput = document.getElementById("song-search");
+        const cards = Array.from(document.querySelectorAll(".music-card"));
+        const songCount = document.getElementById("song-count");
+        const noResults = document.getElementById("no-results");
+        const searchResults = document.getElementById("search-results");
+        const searchResultsList = document.getElementById("search-results-list");
+
+        function normalizarTexto(texto) {
+            return texto
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim();
+        }
+
+        function filterSongs() {
+            const query = normalizarTexto(searchInput.value);
+            let visible = 0;
+
+            cards.forEach(card => {
+                const nombre = normalizarTexto(card.dataset.title || "");
+                const artista = normalizarTexto(card.dataset.artist || "");
+
+                const coincide = !query ||
+                    nombre.includes(query) ||
+                    artista.includes(query);
+
+                card.style.display = coincide ? "" : "none";
+
+                if (coincide) visible++;
+            });
+
+            songCount.textContent =
+                visible + (visible === 1 ? " TRACK" : " TRACKS");
+
+            noResults.hidden = visible !== 0;
+            searchResultsList.replaceChildren();
+
+            if (!query) {
+                searchResults.hidden = true;
+                return;
+            }
+
+            const coincidencias = cards.filter(card => {
+                const nombre = normalizarTexto(card.dataset.title || "");
+                const artista = normalizarTexto(card.dataset.artist || "");
+
+                return nombre.includes(query) || artista.includes(query);
+            });
+
+            coincidencias.forEach(card => {
+                const enlace = document.createElement("a");
+                enlace.className = "search-result-item";
+                enlace.href = card.href;
+
+                const imagenOriginal = card.querySelector(".card-cover img");
+                const imagen = document.createElement("img");
+
+                if (imagenOriginal) {
+                    imagen.src = imagenOriginal.src;
+                    imagen.alt = imagenOriginal.alt;
+                }
+
+                const informacion = document.createElement("div");
+                informacion.className = "search-result-info";
+
+                const titulo = document.createElement("strong");
+                titulo.textContent = card.dataset.title || "";
+
+                const artista = document.createElement("span");
+                artista.textContent =
+                    card.querySelector(".info p")?.textContent || "";
+
+                const icono = document.createElement("span");
+                icono.className = "search-result-play";
+                icono.textContent = "▶";
+
+                informacion.append(titulo, artista);
+                enlace.append(imagen, informacion, icono);
+
+                searchResultsList.appendChild(enlace);
+            });
+
+            if (coincidencias.length === 0) {
+                const mensaje = document.createElement("p");
+                mensaje.className = "search-result-empty";
+                mensaje.textContent = "No se encontraron canciones.";
+                searchResultsList.appendChild(mensaje);
+            }
+
+            searchResults.hidden = false;
+        }
+
+        searchInput.addEventListener("input", filterSongs);
+
+        searchInput.addEventListener("focus", () => {
+            if (searchInput.value.trim()) {
+                filterSongs();
+            }
+        });
+
+        document.addEventListener("click", event => {
+            if (!event.target.closest(".search-wrapper")) {
+                searchResults.hidden = true;
+            }
+        });
+
+        searchInput.addEventListener("keydown", event => {
+            if (event.key === "Escape") {
+                searchResults.hidden = true;
+                searchInput.blur();
+            }
+        });
+
+        function abrirReproductor() {
+            const pagina = localStorage.getItem("musicPage");
+
+            if (!pagina || !audio.src) return;
+
+            localStorage.setItem("musicTime", String(audio.currentTime));
+            localStorage.setItem(
+                "musicPlaying",
+                String(!audio.paused && !audio.ended)
+            );
+
+            window.location.href = pagina;
+        }
+
+        miniPlayer.addEventListener("click", function (event) {
+            if (event.target.closest("button, input, audio, a")) {
+                return;
+            }
+
+            abrirReproductor();
+        });
+
+        miniPlayer.addEventListener("keydown", function (event) {
+            if (
+                (event.key === "Enter" || event.key === " ") &&
+                event.target === miniPlayer
+            ) {
+                event.preventDefault();
+                abrirReproductor();
+            }
+        });
+
+        document.addEventListener("click", function (event) {
+            const enlace = event.target.closest(
+                "a.music-card, a.search-result-item"
+            );
+
+            if (!enlace) return;
+
+            localStorage.setItem("musicPage", enlace.href);
+            localStorage.setItem("musicPlaying", "true");
+        });
+
+        const playlistModal = document.getElementById("playlist-modal");
+        const openPlaylistButton = document.getElementById("open-playlist-modal");
+        const openPlaylistSecondary = document.getElementById("open-playlist-modal-secondary");
+        const closePlaylistButton = document.getElementById("close-playlist-modal");
+        const cancelPlaylistButton = document.getElementById("cancel-playlist-modal");
+        const playlistNameInput = document.getElementById("playlist-name");
+
+        function abrirModalPlaylist() {
+            playlistModal.classList.add("active");
+            playlistModal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+
+            setTimeout(() => {
+                playlistNameInput.focus();
+            }, 100);
+        }
+
+        function cerrarModalPlaylist() {
+            playlistModal.classList.remove("active");
+            playlistModal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        openPlaylistButton.addEventListener("click", abrirModalPlaylist);
+        openPlaylistSecondary.addEventListener("click", abrirModalPlaylist);
+        closePlaylistButton.addEventListener("click", cerrarModalPlaylist);
+        cancelPlaylistButton.addEventListener("click", cerrarModalPlaylist);
+
+        playlistModal.addEventListener("click", function (event) {
+            if (event.target === playlistModal) {
+                cerrarModalPlaylist();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && playlistModal.classList.contains("active")) {
+                cerrarModalPlaylist();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

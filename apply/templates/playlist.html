@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ playlist.nombre }} | Musiikkisovellus</title>
+    <link rel="stylesheet" href="{% static 'apply/style.css' %}">
+    <style>
+        .playlist-page {
+            max-width: 1100px;
+            margin: auto;
+            padding: 55px 35px;
+        }
+
+        .playlist-header {
+            background: #e60012;
+            color: white;
+            padding: 40px;
+            transform: skew(-2deg);
+            margin-bottom: 35px;
+        }
+
+        .playlist-header h1 {
+            font-size: clamp(32px, 6vw, 65px);
+            text-transform: uppercase;
+            margin: 10px 0;
+        }
+
+        .playlist-header p {
+            margin: 0;
+        }
+
+        .playlist-track {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 13px;
+            border-bottom: 1px solid #333;
+            color: white;
+        }
+
+        .playlist-track img {
+            width: 65px;
+            height: 65px;
+            object-fit: cover;
+        }
+
+        .playlist-track-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .playlist-track-info h3 {
+            margin: 0 0 6px;
+        }
+
+        .playlist-track-info p {
+            margin: 0;
+            color: #aaa;
+        }
+
+        .playlist-track a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .playlist-remove {
+            background: transparent;
+            border: 1px solid #e60012;
+            color: white;
+            padding: 9px 12px;
+            cursor: pointer;
+        }
+
+        .playlist-remove:hover {
+            background: #e60012;
+        }
+
+        .playlist-empty {
+            color: #aaa;
+            padding: 30px 0;
+        }
+
+        .playlist-delete {
+            background: #e60012;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            cursor: pointer;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 600px) {
+            .playlist-page {
+                padding: 35px 15px;
+            }
+
+            .playlist-header {
+                padding: 25px;
+            }
+
+            .playlist-track {
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .playlist-track img {
+                width: 55px;
+                height: 55px;
+            }
+
+            .playlist-remove {
+                padding: 8px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+
+<body class="player-body">
+
+    <a href="{% url 'inicio' %}" class="player-back">
+        ← REGRESAR
+    </a>
+
+    <main class="playlist-page">
+
+        <header class="playlist-header">
+            <p>PHANTOM SOUND SYSTEM</p>
+            <h1>{{ playlist.nombre }}</h1>
+            <p>{{ playlist.descripcion }}</p>
+            <p>{{ canciones_playlist|length }} CANCIONES</p>
+        </header>
+
+        <section>
+            {% for cancion in canciones_playlist %}
+            <div class="playlist-track">
+
+                <a href="{% url 'reproductor' cancion.slug %}?origen=playlist&playlist_id={{ playlist.id }}">
+                    <img src="{% if cancion.imagen_estatica %}{% static cancion.imagen %}{% else %}{{ cancion.imagen }}{% endif %}"
+                        alt="{{ cancion.nombre }}">
+                </a>
+
+                <div class="playlist-track-info">
+                    <h3>
+                        <a href="{% url 'reproductor' cancion.slug %}?origen=playlist&playlist_id={{ playlist.id }}">
+                            {{ cancion.nombre }}
+                        </a>
+                    </h3>
+                    <p>{{ cancion.artista }}</p>
+                </div>
+
+                <form method="POST" action="{% url 'quitar_cancion_playlist' playlist.id cancion.slug %}">
+                    {% csrf_token %}
+                    <button class="playlist-remove" type="submit">
+                        QUITAR
+                    </button>
+                </form>
+
+            </div>
+            {% empty %}
+            <p class="playlist-empty">
+                TODAVÍA NO HAY CANCIONES EN ESTA PLAYLIST.
+            </p>
+            {% endfor %}
+        </section>
+
+        <form method="POST" action="{% url 'eliminar_playlist' playlist.id %}"
+            onsubmit="return confirm('¿Seguro que deseas eliminar esta playlist?');">
+            {% csrf_token %}
+            <button type="submit" class="playlist-delete">
+                ELIMINAR PLAYLIST
+            </button>
+        </form>
+
+    </main>
+
+</body>
+
+</html>

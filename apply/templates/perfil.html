@@ -1,0 +1,213 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi perfil | Musiikkisovellus</title>
+    <link rel="stylesheet" href="{% static 'apply/style.css' %}">
+</head>
+
+<body class="music-home profile-page">
+
+    <aside class="music-sidebar">
+        <a href="{% url 'inicio' %}" class="sidebar-brand">
+            <span class="brand-symbol">M</span>
+            <span>MUSIIKKISOVELLUS</span>
+        </a>
+
+        <nav class="sidebar-nav">
+            <a href="{% url 'inicio' %}" class="sidebar-link">
+                <span class="nav-icon">⌂</span>Inicio
+            </a>
+            <a href="{% url 'mis_favoritos' %}" class="sidebar-link">
+                <span class="nav-icon">♥</span>Mis favoritos
+            </a>
+            <a href="{% url 'mi_perfil' %}" class="sidebar-link active">
+                <span class="nav-icon">◉</span>Mi perfil
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-user">
+                <div class="user-avatar">{{ user.username|first|upper }}</div>
+                <div class="user-details">
+                    <span class="user-name">{{ user.username }}</span>
+                    <a href="{% url 'editar_perfil' %}">Editar cuenta</a>
+                </div>
+            </div>
+
+            <form method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="sidebar-logout" type="submit">Cerrar sesión</button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="music-main profile-main">
+
+        <div class="music-topbar">
+            <div class="topbar-arrows">
+                <span>PHANTOM</span>
+                <span class="topbar-slash">/</span>
+                <span>MI PERFIL</span>
+            </div>
+
+            <a class="profile-edit-button" href="{% url 'editar_perfil' %}">
+                ⚙ EDITAR PERFIL
+            </a>
+        </div>
+
+        <section class="profile-cover"
+            {% if perfil.portada %}
+                style="background-image:linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.15)),url('{{ perfil.portada.url }}')"
+            {% endif %}>
+            <span class="profile-cover-label">PHANTOM SOUND / PERSONAL FILE</span>
+        </section>
+
+        <section class="profile-identity">
+            <div class="profile-avatar">
+                {% if perfil.foto %}
+                    <img src="{{ perfil.foto.url }}" alt="Foto de perfil">
+                {% else %}
+                    <span>{{ user.username|first|upper }}</span>
+                {% endif %}
+            </div>
+
+            <div class="profile-identity-text">
+                <span class="profile-kicker">MEMBER PROFILE</span>
+                <h1>{{ user.username }}</h1>
+
+                <p>
+                    {% if user.first_name or user.last_name %}
+                        {{ user.first_name }} {{ user.last_name }}
+                    {% else %}
+                        Phantom listener
+                    {% endif %}
+                </p>
+
+                {% if perfil.mostrar_biografia and perfil.biografia %}
+                    <p class="profile-bio">{{ perfil.biografia }}</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="profile-stats">
+            <div>
+                <strong>{{ total_reproducciones }}</strong>
+                <span>REPRODUCCIONES</span>
+            </div>
+            <div>
+                <strong>{{ total_favoritos }}</strong>
+                <span>FAVORITOS</span>
+            </div>
+            <div>
+                <strong>{{ total_playlists }}</strong>
+                <span>PLAYLISTS</span>
+            </div>
+        </section>
+
+        {% if perfil.mostrar_favoritos %}
+            <section class="profile-section">
+                <div class="profile-section-heading">
+                    <div>
+                        <span class="profile-kicker">YOUR SOUNDTRACK</span>
+                        <h2>CANCIONES FAVORITAS</h2>
+                    </div>
+                    <a href="{% url 'mis_favoritos' %}">VER TODAS ↗</a>
+                </div>
+
+                <div class="profile-song-grid">
+                    {% for cancion in canciones_favoritas %}
+                        <a class="profile-song"
+                            href="{% url 'reproductor' cancion.slug %}?origen=favoritos">
+
+                            <img
+                                src="{% if cancion.imagen_estatica %}{% static cancion.imagen %}{% else %}{{ cancion.imagen }}{% endif %}"
+                                alt="">
+
+                            <span>
+                                <strong>{{ cancion.nombre }}</strong>
+                                <small>{{ cancion.artista }}</small>
+                            </span>
+                        </a>
+                    {% empty %}
+                        <p class="profile-empty">
+                            Todavía no tienes canciones favoritas.
+                        </p>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if perfil.mostrar_mas_escuchadas %}
+            <section class="profile-section">
+                <div class="profile-section-heading">
+                    <div>
+                        <span class="profile-kicker">MOST PLAYED</span>
+                        <h2>MÁS ESCUCHADAS</h2>
+                    </div>
+                </div>
+
+                <div class="profile-song-grid">
+                    {% for cancion in mas_escuchadas %}
+                        <a class="profile-song"
+                            href="{% url 'reproductor' cancion.slug %}">
+
+                            <img
+                                src="{% if cancion.imagen_estatica %}{% static cancion.imagen %}{% else %}{{ cancion.imagen }}{% endif %}"
+                                alt="">
+
+                            <span>
+                                <strong>{{ cancion.nombre }}</strong>
+                                <small>
+                                    {{ cancion.artista }} · {{ cancion.total }} reproducciones
+                                </small>
+                            </span>
+                        </a>
+                    {% empty %}
+                        <p class="profile-empty">
+                            Tu historial aparecerá aquí cuando registres reproducciones.
+                        </p>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if perfil.mostrar_playlists %}
+            <section class="profile-section">
+                <div class="profile-section-heading">
+                    <div>
+                        <span class="profile-kicker">YOUR COLLECTIONS</span>
+                        <h2>PLAYLISTS</h2>
+                    </div>
+                </div>
+
+                <div class="profile-playlist-grid">
+                    {% for playlist in playlists %}
+                        <a class="profile-playlist"
+                            href="{% url 'ver_playlist' playlist.id %}">
+
+                            <span class="playlist-mark">♫</span>
+                            <strong>{{ playlist.nombre }}</strong>
+                            <small>{{ playlist.canciones.count }} canciones</small>
+                        </a>
+                    {% empty %}
+                        <p class="profile-empty">
+                            Todavía no has creado playlists.
+                        </p>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        <footer class="music-footer">
+            <span>MUSIIKKISOVELLUS ©</span>
+            <span>MADE TO FEEL THE MUSIC <strong>★</strong></span>
+        </footer>
+
+    </main>
+
+</body>
+</html>

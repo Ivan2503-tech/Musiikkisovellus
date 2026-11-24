@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar cuentas | Musiikkisovellus</title>
+    <link rel="stylesheet" href="{% static 'apply/style.css' %}">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="logo">Administrar cuentas</div>
+        <a class="crud-button" href="{% url 'inicio' %}">Volver a música</a>
+    </header>
+
+    <main class="crud-container">
+        <h1>Cuentas registradas</h1>
+        <p>Administra los usuarios de Musiikkisovellus.</p>
+
+        <a class="crud-button" href="{% url 'crear_cuenta' %}">
+            + Crear cuenta
+        </a>
+
+        <div class="crud-table-wrapper">
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Correo electrónico</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cuenta in usuarios %}
+                    <tr>
+                        <td>{{ cuenta.id }}</td>
+                        <td>{{ cuenta.username }}</td>
+                        <td>{{ cuenta.email|default:"Sin correo" }}</td>
+                        <td>
+                            {% if cuenta.is_active %}
+                            Activa
+                            {% else %}
+                            Desactivada
+                            {% endif %}
+                        </td>
+                        <td class="crud-actions">
+                            {% if not cuenta.is_superuser %}
+                            <a href="{% url 'editar_cuenta' cuenta.id %}">
+                                Editar
+                            </a>
+                            {% if cuenta.id != request.user.id %}
+                            <a href="{% url 'eliminar_cuenta' cuenta.id %}">
+                                Eliminar
+                            </a>
+                            {% endif %}
+                            {% else %}
+                            Administrador principal
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">Todavía no hay cuentas registradas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,305 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis favoritos | Musiikkisovellus</title>
+    <link rel="stylesheet" href="{% static 'apply/style.css' %}">
+
+    <style>
+        .favorites-page {
+            width: min(1150px, 92%);
+            margin: auto;
+            padding: 55px 20px 80px;
+            position: relative;
+        }
+
+        .favorites-header {
+            margin-bottom: 45px;
+            position: relative;
+            padding: 25px 30px;
+            background: #111;
+            border: 2px solid white;
+            border-left: 9px solid #e60012;
+            transform: skew(-3deg);
+            box-shadow: 8px 8px 0 #e60012;
+        }
+
+        .favorites-header>* {
+            transform: skew(3deg);
+        }
+
+        .favorites-eyebrow {
+            color: #e60012;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            margin: 0 0 10px;
+        }
+
+        .favorites-page h1 {
+            font-size: clamp(32px, 6vw, 58px);
+            color: white;
+            font-weight: 1000;
+            font-style: italic;
+            text-transform: uppercase;
+            margin: 0;
+            line-height: 1;
+            text-shadow: 4px 4px 0 #e60012;
+        }
+
+        .favorites-page h1 span {
+            color: #e60012;
+            text-shadow: 3px 3px 0 white;
+        }
+
+        .favorites-subtitle {
+            color: #aaa;
+            font-size: 12px;
+            letter-spacing: 3px;
+            margin-top: 17px;
+            font-weight: bold;
+        }
+
+        .favorites-section-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            color: white;
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .favorites-section-title::after {
+            content: "";
+            flex: 1;
+            height: 3px;
+            background: linear-gradient(to right, #e60012, transparent);
+        }
+
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .favorite-card {
+            min-width: 0;
+            min-height: 125px;
+            display: flex;
+            align-items: center;
+            gap: 17px;
+            padding: 14px;
+            color: white;
+            text-decoration: none;
+            background: linear-gradient(120deg, #1b1b1b, #080808);
+            border: 2px solid white;
+            border-left: 6px solid #e60012;
+            box-shadow: 5px 5px 0 #e60012;
+            position: relative;
+            overflow: hidden;
+            transition: .25s ease;
+            transform: skew(-2deg);
+        }
+
+        .favorite-card::after {
+            content: "PHANTOM";
+            position: absolute;
+            right: -12px;
+            bottom: -13px;
+            font-size: 35px;
+            font-weight: 1000;
+            font-style: italic;
+            color: rgba(255, 255, 255, .035);
+            pointer-events: none;
+        }
+
+        .favorite-card:hover {
+            transform: skew(-2deg) translate(-4px, -5px);
+            background: #e60012;
+            border-color: white;
+            box-shadow: 9px 9px 0 white;
+        }
+
+        .favorite-card img {
+            width: 95px;
+            height: 95px;
+            flex-shrink: 0;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 3px 3px 0 #e60012;
+            transform: skew(2deg);
+            transition: .25s;
+        }
+
+        .favorite-card:hover img {
+            border-color: white;
+            box-shadow: 3px 3px 0 black;
+        }
+
+        .favorite-info {
+            min-width: 0;
+            position: relative;
+            z-index: 1;
+            transform: skew(2deg);
+        }
+
+        .favorite-number {
+            display: block;
+            color: #e60012;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 7px;
+        }
+
+        .favorite-card:hover .favorite-number {
+            color: white;
+        }
+
+        .favorite-card h3 {
+            font-size: 17px;
+            font-weight: 1000;
+            text-transform: uppercase;
+            line-height: 1.2;
+            margin: 0 0 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .favorite-card p {
+            color: #aaa;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .favorite-card:hover p {
+            color: white;
+        }
+
+        .favorite-arrow {
+            position: absolute;
+            right: 13px;
+            top: 10px;
+            color: #e60012;
+            font-size: 19px;
+            font-weight: 1000;
+            z-index: 2;
+        }
+
+        .favorite-card:hover .favorite-arrow {
+            color: white;
+        }
+
+        .favorite-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 55px 20px;
+            background: #111;
+            border: 2px solid white;
+            border-left: 8px solid #e60012;
+            box-shadow: 7px 7px 0 #e60012;
+            color: #aaa;
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .favorite-empty span {
+            display: block;
+            font-size: 42px;
+            color: #e60012;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .favorites-page {
+                padding: 35px 12px 60px;
+            }
+
+            .favorites-header {
+                padding: 22px 18px;
+            }
+
+            .favorites-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .favorite-card {
+                min-height: 110px;
+            }
+
+            .favorite-card img {
+                width: 82px;
+                height: 82px;
+            }
+
+            .favorite-card h3 {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body class="player-body">
+
+    <a href="{% url 'inicio' %}" class="player-back">
+        <span class="back-arrow">←</span>
+        <span>REGRESAR</span>
+    </a>
+
+    <main class="favorites-page">
+
+        <header class="favorites-header">
+            <p class="favorites-eyebrow">PHANTOM SOUND SYSTEM</p>
+            <h1>♥ MIS <span>FAVORITOS.</span></h1>
+            <p class="favorites-subtitle">YOUR PERSONAL SOUNDTRACK // TAKE YOUR HEART</p>
+        </header>
+
+        <div class="favorites-section-title">
+            <span>◆ TU COLECCIÓN MUSICAL</span>
+        </div>
+
+        <div class="favorites-grid">
+
+            {% for cancion in canciones_favoritas %}
+
+            <a href="{% url 'reproductor' cancion.slug %}?origen=favoritos" class="favorite-card">
+
+                <img src="{% if cancion.imagen_estatica %}{% static cancion.imagen %}{% else %}{{ cancion.imagen }}{% endif %}"
+                    alt="{{ cancion.nombre }}">
+
+                <div class="favorite-info">
+                    <span class="favorite-number">FAVORITE TRACK // {{ forloop.counter|stringformat:"02d" }}</span>
+                    <h3>{{ cancion.nombre }}</h3>
+                    <p>{{ cancion.artista }}</p>
+                </div>
+
+                <span class="favorite-arrow">↗</span>
+
+            </a>
+
+            {% empty %}
+
+            <div class="favorite-empty">
+                <span>♡</span>
+                TODAVÍA NO TIENES CANCIONES FAVORITAS.
+                <p>EXPLORA TU BIBLIOTECA Y GUARDA TUS CANCIONES.</p>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>

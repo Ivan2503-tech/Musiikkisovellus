@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo }} | Musiikkisovellus</title>
+    <link rel="stylesheet" href="{% static 'apply/style.css' %}">
+</head>
+
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h2>{{ titulo }}</h2>
+                <p>Administración de cuentas</p>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="login-input">
+                    <label for="Usuario">Usuario</label>
+                    <input type="text" id="Usuario" name="Usuario" value="{{ cuenta.username|default:'' }}" required>
+                </div>
+
+                <div class="login-input">
+                    <label for="Correo">Correo electrónico</label>
+                    <input type="email" id="Correo" name="Correo" value="{{ cuenta.email|default:'' }}" required>
+                </div>
+
+                <div class="login-input">
+                    <label for="Contraseña">
+                        {% if cuenta %}Nueva contraseña (opcional){% else %}Contraseña{% endif %}
+                    </label>
+                    <input type="password" id="Contraseña" name="Contraseña" {% if not cuenta %}required{% endif %}>
+                </div>
+
+                {% if not cuenta %}
+                <div class="login-input">
+                    <label for="ConfirmarContraseña">Confirmar contraseña</label>
+                    <input type="password" id="ConfirmarContraseña" name="ConfirmarContraseña" required>
+                </div>
+                {% endif %}
+
+                {% if error %}
+                <p class="login-error">{{ error }}</p>
+                {% endif %}
+
+                <button type="submit" class="login-button">
+                    Guardar cuenta
+                </button>
+            </form>
+
+            <a href="{% url 'cuentas' %}" class="register-link">
+                Cancelar y volver
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

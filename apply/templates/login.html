@@ -1,0 +1,109 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Iniciar sesión | Musiikkisovellus</title>
+
+    <link rel="stylesheet" href="{% static 'apply/style.css' %}">
+
+</head>
+
+<body class="login-body">
+
+    <div class="login-container">
+
+        <div class="login-welcome">
+
+            <div class="login-logo">
+                <div class="logo-circle"></div>
+                <span>Musiikkisovellus</span>
+            </div>
+
+            <div class="welcome-content">
+
+                <h1>Bienvenido</h1>
+
+                <p>
+                    Inicia sesión para continuar
+                    disfrutando de tu música.
+                </p>
+
+            </div>
+
+            <div class="welcome-footer">
+                <span>Musiikkisovellus</span>
+            </div>
+
+        </div>
+
+
+        <div class="login-box">
+
+            <div class="login-header">
+
+                <h2>Iniciar sesión</h2>
+
+                <p>
+                    Ingresa tus datos para continuar
+                </p>
+
+            </div>
+
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+
+                <div class="login-input">
+                    <label for="Correo">Correo electrónico</label>
+                    <input type="email" id="Correo" name="Correo" placeholder="Escribe tu correo electrónico" required>
+                </div>
+
+
+
+                <div class="login-input">
+
+                    <label for="Contraseña">
+                        Contraseña
+                    </label>
+
+                    <input type="password" id="Contraseña" name="Contraseña" placeholder="Escribe tu contraseña"
+                        required>
+
+                </div>
+
+
+                {% if error %}
+
+                <p class="login-error">
+                    {{ error }}
+                </p>
+
+                {% endif %}
+
+
+                <button type="submit" class="login-button">
+                    Iniciar sesión
+                </button>
+
+            </form>
+
+
+            <a href="{% url 'registro' %}" class="register-link">
+                ¿No tienes una cuenta? Regístrate
+            </a>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

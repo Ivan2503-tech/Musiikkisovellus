@@ -1,0 +1,223 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración | Musiikkisovellus</title>
+    <link rel="stylesheet" href="{% static 'apply/style.css' %}">
+</head>
+
+<body class="music-home profile-page">
+
+    <aside class="music-sidebar">
+        <a href="{% url 'inicio' %}" class="sidebar-brand">
+            <span class="brand-symbol">M</span>
+            <span>MUSIIKKISOVELLUS</span>
+        </a>
+
+        <nav class="sidebar-nav">
+            <a href="{% url 'inicio' %}" class="sidebar-link">⌂ Inicio</a>
+            <a href="{% url 'mi_perfil' %}" class="sidebar-link">◉ Mi perfil</a>
+            <a href="{% url 'editar_perfil' %}" class="sidebar-link active">⚙ Configuración</a>
+        </nav>
+    </aside>
+
+    <main class="music-main profile-main">
+
+        <div class="music-topbar">
+            <div class="topbar-arrows">
+                <span>PHANTOM</span>
+                <span class="topbar-slash">/</span>
+                <span>CONFIGURACIÓN</span>
+            </div>
+
+            <a class="profile-edit-button" href="{% url 'mi_perfil' %}">
+                ← VOLVER AL PERFIL
+            </a>
+        </div>
+
+        <div class="settings-layout">
+
+            <nav class="settings-menu">
+                <span class="profile-kicker">ACCOUNT SETTINGS</span>
+
+                <a href="?seccion=personal" class="{% if seccion == 'personal' %}selected{% endif %}">
+                    Información personal
+                </a>
+
+                <a href="?seccion=foto" class="{% if seccion == 'foto' %}selected{% endif %}">
+                    Foto y portada
+                </a>
+
+                <a href="?seccion=usuario" class="{% if seccion == 'usuario' %}selected{% endif %}">
+                    Nombre de usuario
+                </a>
+
+                <a href="?seccion=correo" class="{% if seccion == 'correo' %}selected{% endif %}">
+                    Correo electrónico
+                </a>
+
+                <a href="?seccion=contrasena" class="{% if seccion == 'contrasena' %}selected{% endif %}">
+                    Contraseña
+                </a>
+
+                <a href="?seccion=privacidad" class="{% if seccion == 'privacidad' %}selected{% endif %}">
+                    Privacidad
+                </a>
+
+                <a href="{% url 'eliminar_mi_cuenta' %}" class="danger-link">
+                    Eliminar cuenta
+                </a>
+            </nav>
+
+            <section class="settings-panel">
+
+                <span class="profile-kicker">PERSONAL DATA / SECURITY</span>
+
+                {% if error %}
+                <p class="login-error">{{ error }}</p>
+                {% endif %}
+
+                {% for message in messages %}
+                <p class="settings-success">{{ message }}</p>
+                {% endfor %}
+
+                {% if seccion == 'personal' %}
+
+                <h1>Información personal</h1>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="personal">
+
+                    <label>Nombre</label>
+                    <input name="Nombre" value="{{ user.first_name }}">
+
+                    <label>Apellido</label>
+                    <input name="Apellido" value="{{ user.last_name }}">
+
+                    <label>Biografía</label>
+                    <textarea name="biografia" maxlength="300">{{ perfil.biografia }}</textarea>
+
+                    <button class="profile-save-button">GUARDAR CAMBIOS</button>
+                </form>
+
+                {% elif seccion == 'foto' %}
+
+                <h1>Foto y portada</h1>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="foto">
+
+                    <label>Fotografía de perfil</label>
+                    <input type="file" name="foto" accept="image/*">
+
+                    <label>Imagen de portada</label>
+                    <input type="file" name="portada" accept="image/*">
+
+                    <button class="profile-save-button">ACTUALIZAR IMÁGENES</button>
+                </form>
+
+                {% elif seccion == 'usuario' %}
+
+                <h1>Nombre de usuario</h1>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="usuario">
+
+                    <label>Nuevo usuario</label>
+                    <input name="Usuario" value="{{ user.username }}" required>
+
+                    <button class="profile-save-button">CAMBIAR USUARIO</button>
+                </form>
+
+                {% elif seccion == 'correo' %}
+
+                <h1>Correo electrónico</h1>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="correo">
+
+                    <label>Nuevo correo</label>
+                    <input type="email" name="Correo" value="{{ user.email }}" required>
+
+                    <button class="profile-save-button">CAMBIAR CORREO</button>
+                </form>
+
+                {% elif seccion == 'contrasena' %}
+
+                <h1>Cambiar contraseña</h1>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="contrasena">
+
+                    <label>Contraseña actual</label>
+                    <input type="password" name="actual" required>
+
+                    <label>Nueva contraseña</label>
+                    <input type="password" name="nueva" required>
+
+                    <label>Confirmar nueva contraseña</label>
+                    <input type="password" name="confirmar" required>
+
+                    <button class="profile-save-button">ACTUALIZAR CONTRASEÑA</button>
+                </form>
+
+                {% elif seccion == 'privacidad' %}
+
+                <h1>Privacidad del perfil</h1>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="privacidad">
+
+                    <label class="privacy-option">
+                        <span>Perfil público</span>
+                        <input type="checkbox" name="perfil_publico" {{ perfil.perfil_publico|yesno:'checked=checked,' }}>
+                    </label>
+
+                    <label class="privacy-option">
+                        <span>Mostrar biografía</span>
+                        <input type="checkbox" name="mostrar_biografia" {{ perfil.mostrar_biografia|yesno:'checked=checked,' }}>
+                    </label>
+
+                    <label class="privacy-option">
+                        <span>Mostrar canciones favoritas</span>
+                        <input type="checkbox" name="mostrar_favoritos" {{ perfil.mostrar_favoritos|yesno:'checked=checked,' }}>
+                    </label>
+
+                    <label class="privacy-option">
+                        <span>Mostrar canciones más escuchadas</span>
+                        <input type="checkbox" name="mostrar_mas_escuchadas" {{ perfil.mostrar_mas_escuchadas|yesno:'checked=checked,' }}>
+                    </label>
+
+                    <label class="privacy-option">
+                        <span>Mostrar playlists</span>
+                        <input type="checkbox" name="mostrar_playlists" {{ perfil.mostrar_playlists|yesno:'checked=checked,' }}>
+                    </label>
+
+                    <label class="privacy-option">
+                        <span>Mostrar actividad reciente</span>
+                        <input type="checkbox" name="mostrar_actividad" {{ perfil.mostrar_actividad|yesno:'checked=checked,' }}>
+                    </label>
+
+                    <button class="profile-save-button">GUARDAR PRIVACIDAD</button>
+                </form>
+
+                {% endif %}
+
+            </section>
+        </div>
+
+    </main>
+
+</body>
+
+</html>
