@@ -8,175 +8,724 @@
     <title>{{ playlist.nombre }} | Musiikkisovellus</title>
     <link rel="stylesheet" href="{% static 'apply/style.css' %}">
     <style>
-        .playlist-page {
-            max-width: 1100px;
-            margin: auto;
-            padding: 55px 35px;
+        .playlist-view {
+            min-height: 100vh;
+            padding: 35px 5% 125px;
+            color: white;
+            background: #101010;
         }
 
-        .playlist-header {
-            background: #e60012;
-            color: white;
-            padding: 40px;
-            transform: skew(-2deg);
+        .playlist-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 35px;
         }
 
-        .playlist-header h1 {
-            font-size: clamp(32px, 6vw, 65px);
-            text-transform: uppercase;
-            margin: 10px 0;
-        }
-
-        .playlist-header p {
-            margin: 0;
-        }
-
-        .playlist-track {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            padding: 13px;
-            border-bottom: 1px solid #333;
+        .playlist-back {
             color: white;
+            text-decoration: none;
+            font-weight: 700;
         }
 
-        .playlist-track img {
-            width: 65px;
-            height: 65px;
+        .playlist-back:hover {
+            color: #e60012;
+        }
+
+        .playlist-hero {
+            display: flex;
+            align-items: flex-end;
+            gap: 32px;
+            padding: 35px;
+            background: linear-gradient(120deg, #450008, #171717 75%);
+            border-left: 5px solid #e60012;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .playlist-cover-form {
+            flex: 0 0 230px;
+        }
+
+        .playlist-cover-label {
+            position: relative;
+            display: block;
+            width: 230px;
+            height: 230px;
+            overflow: hidden;
+            cursor: pointer;
+            background: #242424;
+            box-shadow: 0 12px 35px #0009;
+        }
+
+        .playlist-cover-label img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
 
-        .playlist-track-info {
+        .playlist-cover-placeholder {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            font-size: 90px;
+            color: #e60012;
+            background: linear-gradient(145deg, #333, #111);
+        }
+
+        .playlist-cover-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            color: white;
+            background: #000a;
+            opacity: 0;
+            transition: opacity .2s ease;
+        }
+
+        .playlist-cover-label:hover .playlist-cover-overlay {
+            opacity: 1;
+        }
+
+        .playlist-cover-overlay span:first-child {
+            font-size: 35px;
+        }
+
+        .playlist-cover-overlay span:last-child {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .playlist-cover-input {
+            display: none;
+        }
+
+        .playlist-cover-save {
+            display: block;
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px;
+            border: 0;
+            color: white;
+            background: #e60012;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .playlist-cover-save:hover {
+            background: #bd0010;
+        }
+
+        .playlist-heading {
             flex: 1;
             min-width: 0;
         }
 
-        .playlist-track-info h3 {
-            margin: 0 0 6px;
+        .playlist-heading small {
+            color: #ccc;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .playlist-heading h1 {
+            margin: 12px 0;
+            font-size: clamp(35px, 6vw, 65px);
+            overflow-wrap: anywhere;
+        }
+
+        .playlist-heading p {
+            color: #ccc;
+            margin: 0 0 18px;
+        }
+
+        .playlist-heading .playlist-count {
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .playlist-edit {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+            padding: 20px;
+            margin-bottom: 35px;
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 10px;
+        }
+
+        .playlist-edit label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .playlist-edit input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            color: white;
+            background: #111;
+            border: 1px solid #444;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .playlist-edit input:focus {
+            border-color: #e60012;
+        }
+
+        .playlist-edit button {
+            min-height: 42px;
+            padding: 0 20px;
+            border: 0;
+            border-radius: 5px;
+            color: white;
+            background: #e60012;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .playlist-edit button:hover {
+            background: #bd0010;
+        }
+
+        .playlist-section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .playlist-section-title h2 {
+            font-size: 22px;
+        }
+
+        .playlist-tracks {
+            border-top: 1px solid #333;
+        }
+
+        .playlist-track {
+            display: grid;
+            grid-template-columns: 35px 55px minmax(0, 1fr) 45px;
+            gap: 15px;
+            align-items: center;
+            min-height: 75px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #292929;
+            transition: background .2s ease;
+        }
+
+        .playlist-track:hover {
+            background: #202020;
+        }
+
+        .playlist-track-number {
+            color: #888;
+            text-align: center;
+        }
+
+        .playlist-track-cover {
+            width: 55px;
+            height: 55px;
+            object-fit: cover;
+            background: #292929;
+        }
+
+        .playlist-track-info {
+            min-width: 0;
+        }
+
+        .playlist-track-info a {
+            color: white;
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+        .playlist-track-info a:hover {
+            color: #e60012;
         }
 
         .playlist-track-info p {
-            margin: 0;
-            color: #aaa;
-        }
-
-        .playlist-track a {
-            color: white;
-            text-decoration: none;
+            margin: 5px 0 0;
+            color: #999;
+            font-size: 13px;
         }
 
         .playlist-remove {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border: 0;
+            border-radius: 50%;
+            color: #aaa;
             background: transparent;
-            border: 1px solid #e60012;
-            color: white;
-            padding: 9px 12px;
             cursor: pointer;
+            transition: .2s;
         }
 
         .playlist-remove:hover {
+            color: white;
             background: #e60012;
+        }
+
+        .playlist-remove svg {
+            width: 19px;
+            height: 19px;
         }
 
         .playlist-empty {
-            color: #aaa;
-            padding: 30px 0;
+            padding: 55px 20px;
+            color: #999;
+            text-align: center;
+            background: #191919;
+        }
+
+        .playlist-empty strong {
+            display: block;
+            margin-bottom: 10px;
+            color: white;
+            font-size: 20px;
         }
 
         .playlist-delete {
-            background: #e60012;
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            cursor: pointer;
-            margin-top: 25px;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 35px;
         }
 
-        @media (max-width: 600px) {
-            .playlist-page {
-                padding: 35px 15px;
+        .playlist-delete button {
+            padding: 11px 18px;
+            border: 1px solid #a0000d;
+            border-radius: 5px;
+            color: #ff5965;
+            background: transparent;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .playlist-delete button:hover {
+            color: white;
+            background: #a0000d;
+        }
+
+        .playlist-messages {
+            margin-bottom: 20px;
+        }
+
+        .playlist-messages p {
+            padding: 12px 15px;
+            color: white;
+            background: #292929;
+            border-left: 4px solid #e60012;
+        }
+
+        @media (max-width: 700px) {
+            .playlist-view {
+                padding: 20px 15px 110px;
             }
 
-            .playlist-header {
-                padding: 25px;
+            .playlist-hero {
+                flex-direction: column;
+                align-items: center;
+                padding: 22px;
+                text-align: center;
+            }
+
+            .playlist-cover-form {
+                flex-basis: auto;
+            }
+
+            .playlist-cover-label {
+                width: 190px;
+                height: 190px;
+            }
+
+            .playlist-heading {
+                width: 100%;
+            }
+
+            .playlist-edit {
+                grid-template-columns: 1fr;
             }
 
             .playlist-track {
-                gap: 12px;
-                flex-wrap: wrap;
+                grid-template-columns: 25px 48px minmax(0, 1fr) 38px;
+                gap: 9px;
+                padding: 9px 4px;
             }
 
-            .playlist-track img {
-                width: 55px;
-                height: 55px;
-            }
-
-            .playlist-remove {
-                padding: 8px;
-                font-size: 11px;
+            .playlist-track-cover {
+                width: 48px;
+                height: 48px;
             }
         }
     </style>
 </head>
 
 <body class="player-body">
+    <main class="playlist-view">
+        <div class="playlist-topbar">
+            <a href="{% url 'inicio' %}" class="playlist-back">← VOLVER A LA BIBLIOTECA</a>
+            <span>MUSIIKKISOVELLUS</span>
+        </div>
 
-    <a href="{% url 'inicio' %}" class="player-back">
-        ← REGRESAR
-    </a>
+        {% if messages %}
+        <div class="playlist-messages">
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-    <main class="playlist-page">
+        <section class="playlist-hero">
+            <form class="playlist-cover-form" method="POST" enctype="multipart/form-data"
+                action="{% url 'ver_playlist' playlist.id %}" id="playlist-cover-form">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="portada">
+                <label class="playlist-cover-label" for="playlist-image-input">
+                    {% if playlist.imagen %}
+                    <img id="playlist-cover-preview" src="{{ playlist.imagen.url }}" alt="Portada de {{ playlist.nombre }}">
+                    {% else %}
+                    <div class="playlist-cover-placeholder" id="playlist-cover-placeholder">♫</div>
+                    <img id="playlist-cover-preview" alt="Vista previa de portada" style="display:none;">
+                    {% endif %}
+                    <span class="playlist-cover-overlay">
+                        <span>📷</span>
+                        <span>CAMBIAR PORTADA</span>
+                    </span>
+                </label>
+                <input class="playlist-cover-input" type="file" name="imagen" id="playlist-image-input" accept="image/*">
+                <button class="playlist-cover-save" type="submit" id="playlist-cover-save" style="display:none;">GUARDAR PORTADA</button>
+            </form>
 
-        <header class="playlist-header">
-            <p>PHANTOM SOUND SYSTEM</p>
-            <h1>{{ playlist.nombre }}</h1>
-            <p>{{ playlist.descripcion }}</p>
-            <p>{{ canciones_playlist|length }} CANCIONES</p>
-        </header>
+            <div class="playlist-heading">
+                <small>PLAYLIST PERSONAL</small>
+                <h1>{{ playlist.nombre }}</h1>
+                <p>{{ playlist.descripcion|default:"Tu colección personal de música." }}</p>
+                <span class="playlist-count">{{ canciones_playlist|length }} CANCIONES</span>
+            </div>
+        </section>
 
-        <section>
+        <form class="playlist-edit" method="POST" action="{% url 'ver_playlist' playlist.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="editar">
+            <div>
+                <label for="playlist-name">NOMBRE DE LA PLAYLIST</label>
+                <input id="playlist-name" type="text" name="nombre" maxlength="100" value="{{ playlist.nombre }}" required>
+            </div>
+            <div>
+                <label for="playlist-description">DESCRIPCIÓN</label>
+                <input id="playlist-description" type="text" name="descripcion" maxlength="250"
+                    value="{{ playlist.descripcion }}" placeholder="Añade una descripción...">
+            </div>
+            <button type="submit">GUARDAR CAMBIOS</button>
+        </form>
+
+        <div class="playlist-section-title">
+            <h2>Lista de canciones</h2>
+            <span>{{ canciones_playlist|length }} temas</span>
+        </div>
+
+        <section class="playlist-tracks">
             {% for cancion in canciones_playlist %}
-            <div class="playlist-track">
+            <article class="playlist-track">
+                <span class="playlist-track-number">{{ forloop.counter }}</span>
 
-                <a href="{% url 'reproductor' cancion.slug %}?origen=playlist&playlist_id={{ playlist.id }}">
-                    <img src="{% if cancion.imagen_estatica %}{% static cancion.imagen %}{% else %}{{ cancion.imagen }}{% endif %}"
-                        alt="{{ cancion.nombre }}">
-                </a>
+                {% if cancion.imagen_estatica %}
+                <img class="playlist-track-cover" src="{% static cancion.imagen %}" alt="{{ cancion.nombre }}">
+                {% else %}
+                <img class="playlist-track-cover" src="{{ cancion.imagen }}" alt="{{ cancion.nombre }}">
+                {% endif %}
 
                 <div class="playlist-track-info">
-                    <h3>
-                        <a href="{% url 'reproductor' cancion.slug %}?origen=playlist&playlist_id={{ playlist.id }}">
-                            {{ cancion.nombre }}
-                        </a>
-                    </h3>
+                    <a class="playlist-song-link"
+                        href="{% url 'reproductor' cancion.slug %}?origen=playlist&playlist_id={{ playlist.id }}">
+                        {{ cancion.nombre }}
+                    </a>
                     <p>{{ cancion.artista }}</p>
                 </div>
 
                 <form method="POST" action="{% url 'quitar_cancion_playlist' playlist.id cancion.slug %}">
                     {% csrf_token %}
-                    <button class="playlist-remove" type="submit">
-                        QUITAR
+                    <button class="playlist-remove" type="submit" title="Quitar canción"
+                        aria-label="Quitar {{ cancion.nombre }} de la playlist">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18"></path>
+                            <path d="M8 6V4h8v2"></path>
+                            <path d="m19 6-1 14H6L5 6"></path>
+                            <path d="M10 11v5"></path>
+                            <path d="M14 11v5"></path>
+                        </svg>
                     </button>
                 </form>
-
-            </div>
+            </article>
             {% empty %}
-            <p class="playlist-empty">
-                TODAVÍA NO HAY CANCIONES EN ESTA PLAYLIST.
-            </p>
+            <div class="playlist-empty">
+                <strong>Esta playlist todavía está vacía</strong>
+                Agrega canciones desde tu biblioteca para que aparezcan aquí.
+            </div>
             {% endfor %}
         </section>
 
-        <form method="POST" action="{% url 'eliminar_playlist' playlist.id %}"
-            onsubmit="return confirm('¿Seguro que deseas eliminar esta playlist?');">
-            {% csrf_token %}
-            <button type="submit" class="playlist-delete">
-                ELIMINAR PLAYLIST
-            </button>
-        </form>
-
+        <div class="playlist-delete">
+            <form method="POST" action="{% url 'eliminar_playlist' playlist.id %}"
+                onsubmit="return confirm('¿Seguro que deseas eliminar esta playlist?');">
+                {% csrf_token %}
+                <button type="submit">ELIMINAR PLAYLIST</button>
+            </form>
+        </div>
     </main>
 
+    <div id="mini-player" role="link" tabindex="0" aria-label="Abrir el reproductor de música">
+    <div class="mini-info">
+        <span class="mini-label">REPRODUCIENDO</span>
+        <span id="mini-title">Ninguna canción</span>
+    </div>
+
+    <button id="mini-play" aria-label="Reproducir o pausar">▶</button>
+
+    <div class="mini-progress-wrap">
+        <span class="mini-live">NOW PLAYING</span>
+        <input type="range" id="mini-progress" min="0" max="100" value="0"
+            aria-label="Progreso de la canción">
+    </div>
+
+    <span id="mini-time">0:00</span>
+
+    <audio id="mini-audio" preload="metadata"></audio>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const imageInput = document.getElementById("playlist-image-input");
+            const imagePreview = document.getElementById("playlist-cover-preview");
+            const placeholder = document.getElementById("playlist-cover-placeholder");
+            const saveCover = document.getElementById("playlist-cover-save");
+
+            imageInput.addEventListener("change", function () {
+                const file = this.files[0];
+
+                if (!file) return;
+
+                imagePreview.src = URL.createObjectURL(file);
+                imagePreview.style.display = "block";
+
+                if (placeholder) {
+                    placeholder.style.display = "none";
+                }
+
+                saveCover.style.display = "block";
+            });
+
+            const audio = document.getElementById("mini-audio");
+            const playButton = document.getElementById("mini-play");
+            const progress = document.getElementById("mini-progress");
+            const title = document.getElementById("mini-title");
+            const time = document.getElementById("mini-time");
+            const miniPlayer = document.getElementById("mini-player");
+
+            const savedAudio = localStorage.getItem("musicAudio");
+            const savedTitle = localStorage.getItem("musicTitle");
+
+            let seekingMini = false;
+
+            function formatTime(seconds) {
+                if (!Number.isFinite(seconds)) return "0:00";
+
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.floor(seconds % 60)
+                    .toString()
+                    .padStart(2, "0");
+
+                return minutes + ":" + remainingSeconds;
+            }
+
+            if (savedTitle) {
+                title.textContent = savedTitle;
+            }
+
+            if (savedAudio) {
+                audio.src = savedAudio;
+                audio.load();
+
+                audio.addEventListener("loadedmetadata", function () {
+                    const currentSavedAudio = localStorage.getItem("musicAudio");
+                    const currentSavedTime = parseFloat(
+                        localStorage.getItem("musicTime") || "0"
+                    );
+
+                    if (currentSavedAudio !== savedAudio) return;
+
+                    if (
+                        Number.isFinite(currentSavedTime) &&
+                        audio.duration > 0
+                    ) {
+                        audio.currentTime = Math.min(
+                            Math.max(currentSavedTime, 0),
+                            audio.duration
+                        );
+                    }
+
+                    progress.value = audio.duration
+                        ? (audio.currentTime / audio.duration) * 100
+                        : 0;
+
+                    time.textContent = formatTime(audio.currentTime);
+
+                    if (localStorage.getItem("musicPlaying") === "true") {
+                        audio.play().then(() => {
+                            playButton.textContent = "Ⅱ";
+                        }).catch(() => {
+                            localStorage.setItem("musicPlaying", "false");
+                            playButton.textContent = "▶";
+                        });
+                    }
+                }, { once: true });
+            }
+
+            playButton.addEventListener("click", function () {
+                if (audio.paused) {
+                    if (!audio.src) return;
+
+                    audio.play().then(() => {
+                        localStorage.setItem("musicPlaying", "true");
+                        playButton.textContent = "Ⅱ";
+                    }).catch(() => {
+                        playButton.textContent = "▶";
+                    });
+                } else {
+                    audio.pause();
+                    localStorage.setItem("musicPlaying", "false");
+                    playButton.textContent = "▶";
+                }
+            });
+
+            audio.addEventListener("play", function () {
+                localStorage.setItem("musicPlaying", "true");
+                playButton.textContent = "Ⅱ";
+            });
+
+            audio.addEventListener("pause", function () {
+                localStorage.setItem("musicPlaying", "false");
+                localStorage.setItem("musicTime", String(audio.currentTime));
+                playButton.textContent = "▶";
+            });
+
+            audio.addEventListener("timeupdate", function () {
+                if (audio.duration > 0 && !seekingMini) {
+                    progress.value = (audio.currentTime / audio.duration) * 100;
+                }
+
+                time.textContent = formatTime(audio.currentTime);
+
+                if (!seekingMini) {
+                    localStorage.setItem("musicTime", String(audio.currentTime));
+                }
+            });
+
+            progress.addEventListener("pointerdown", function () {
+                seekingMini = true;
+            });
+
+            progress.addEventListener("input", function () {
+                if (
+                    Number.isFinite(audio.duration) &&
+                    audio.duration > 0 &&
+                    audio.readyState >= 1
+                ) {
+                    const newTime = (Number(progress.value) / 100) * audio.duration;
+
+                    audio.currentTime = Math.max(
+                        0,
+                        Math.min(newTime, audio.duration)
+                    );
+
+                    localStorage.setItem("musicTime", String(audio.currentTime));
+                    time.textContent = formatTime(audio.currentTime);
+                }
+            });
+
+            progress.addEventListener("change", function () {
+                seekingMini = false;
+            });
+
+            progress.addEventListener("pointerup", function () {
+                seekingMini = false;
+            });
+
+            progress.addEventListener("pointercancel", function () {
+                seekingMini = false;
+            });
+
+            function abrirReproductor() {
+                const pagina = localStorage.getItem("musicPage");
+
+                if (!pagina || !audio.src) return;
+
+                localStorage.setItem("musicTime", String(audio.currentTime));
+                localStorage.setItem(
+                    "musicPlaying",
+                    String(!audio.paused && !audio.ended)
+                );
+
+                window.location.href = pagina;
+            }
+
+            miniPlayer.addEventListener("click", function (event) {
+                if (event.target.closest("button, input, audio, a")) {
+                    return;
+                }
+
+                abrirReproductor();
+            });
+
+            miniPlayer.addEventListener("keydown", function (event) {
+                if (
+                    (event.key === "Enter" || event.key === " ") &&
+                    event.target === miniPlayer
+                ) {
+                    event.preventDefault();
+                    abrirReproductor();
+                }
+            });
+
+            document.addEventListener("click", function (event) {
+                const enlace = event.target.closest("a.playlist-song-link");
+
+                if (!enlace) return;
+
+                localStorage.setItem("musicPage", enlace.href);
+                localStorage.setItem("musicPlaying", "true");
+            });
+
+            window.addEventListener("pagehide", function () {
+                if (!audio.src) return;
+
+                localStorage.setItem("musicTime", String(audio.currentTime));
+                localStorage.setItem(
+                    "musicPlaying",
+                    String(!audio.paused && !audio.ended)
+                );
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -197,14 +197,12 @@
                 <img src="{{ cancion.imagen.url }}" class="current-cover" alt="Portada actual">
                 {% endif %}
 
-                <input type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp" {% if not cancion
-                    %}required{% endif %}>
+                <input type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp" {% if not cancion %}required{% endif %}>
             </div>
 
             <div class="form-group">
                 <label for="audio">Archivo de audio MP3</label>
-                <input type="file" id="audio" name="audio" accept="audio/mpeg,audio/mp3" {% if not cancion %}required{%
-                    endif %}>
+                <input type="file" id="audio" name="audio" accept="audio/mpeg,audio/mp3" {% if not cancion %}required{% endif %}>
             </div>
 
             <div class="form-buttons">

@@ -1,3 +1,9 @@
+import os
+import mimetypes
+from pathlib import Path
+from urllib.parse import urlencode
+
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -5,29 +11,25 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-from .models import Cancion, Playlist, PlaylistCancion, Favorito, Perfil, HistorialReproduccion
-from django.http import JsonResponse
+from django.core.files import File
 from django.db.models import Count
 from django.contrib.auth import update_session_auth_hash
-from .models import Cancion
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse, Http404
 from django.templatetags.static import static
 from django.urls import reverse
-from urllib.parse import urlencode
+
+from .models import (
+    Cancion,
+    Playlist,
+    PlaylistCancion,
+    Favorito,
+    Perfil,
+    HistorialReproduccion
+)
 
 
 canciones = {
-    "find-your-flame": {
-        "nombre": "Find Your Flame",
-        "artista": "SEGA SOUND TEAM • Kellin Quinn • Tyler Smyth",
-        "imagen": "apply/img/Sonic_Frontiers.jpg",
-        "audio": "/media/audio/Find Your Flame.mp3",
-    },
-    "break-through-it-all": {
-        "nombre": "Break Through It All",
-        "artista": "SEGA SOUND TEAM  • Kellin Quinn",
-        "imagen": "apply/img/Sonic_Frontiers.jpg",
-        "audio": "/media/audio/break_through_it_all.mp3",
-    },
+
     "breaking-the-habit": {
         "nombre": "Breaking the Habit",
         "artista": "Linkin Park",
@@ -52,12 +54,6 @@ canciones = {
         "imagen": "apply/img/Persona_5.jpg",
         "audio": "/media/audio/Colors Flying High.mp3",
     },
-    "come-alive": {
-        "nombre": "Come Alive",
-        "artista": "Sān-Z",
-        "imagen": "apply/img/come_alive.jpg",
-        "audio": "/media/audio/Come Alive.mp3",
-    },
     "dare": {
         "nombre": "Dare",
         "artista": "Gorillaz",
@@ -75,12 +71,6 @@ canciones = {
         "artista": "Skillet",
         "imagen": "apply/img/Unleashed.jpg",
         "audio": "/media/audio/Feel Invincible.mp3",
-    },
-    "Afterlife": {
-        "nombre": "Afterlife",
-        "artista": "Evanescence",
-        "imagen": "apply/img/DMC_afterlife.jpg",
-        "audio": "/media/audio/Afterlife.mp3",
     },
     "Heaven": {
         "nombre": "Heaven",
@@ -105,12 +95,108 @@ canciones = {
 
 def es_administrador(user):
     return user.is_authenticated and user.is_staff
+
+
 def activar_administrador(username):
     usuario = User.objects.get(username=username)
     usuario.is_staff = True
     usuario.is_superuser = True
     usuario.save()
     return usuario
+
+
+def servir_audio(request, nombre_archivo):
+    if Path(nombre_archivo).name != nombre_archivo:
+        raise Http404
+
+    directorio_audio = Path(settings.MEDIA_ROOT) / "audio"
+    ruta_audio = directorio_audio / nombre_archivo
+
+    if not ruta_audio.is_file():
+        raise Http404
+
+    tamano = ruta_audio.stat().st_size
+    tipo_contenido = mimetypes.guess_type(str(ruta_audio))[0] or "audio/mpeg"
+
+    inicio = 0
+    final = tamano - 1
+    estado = 200
+
+    rango = request.headers.get("Range")
+
+    if rango:
+        try:
+            unidad, valores = rango.split("=", 1)
+
+            if unidad.strip().lower() != "bytes" or "," in valores:
+                raise ValueError
+
+            inicio_texto, final_texto = valores.strip().split("-", 1)
+
+            if not inicio_texto:
+                sufijo = int(final_texto)
+
+                if sufijo <= 0:
+                    raise ValueError
+
+                inicio = max(tamano - sufijo, 0)
+                final = tamano - 1
+
+            else:
+                inicio = int(inicio_texto)
+                final = int(final_texto) if final_texto else tamano - 1
+
+                if inicio >= tamano or inicio > final:
+                    raise ValueError
+
+                final = min(final, tamano - 1)
+
+            estado = 206
+
+        except (ValueError, TypeError):
+            respuesta = HttpResponse(status=416)
+            respuesta["Content-Range"] = f"bytes */{tamano}"
+            respuesta["Accept-Ranges"] = "bytes"
+            respuesta["Content-Length"] = "0"
+            return respuesta
+
+    longitud = max(final - inicio + 1, 0)
+
+    if request.method == "HEAD":
+        respuesta = HttpResponse(status=estado, content_type=tipo_contenido)
+    else:
+        def generar_fragmento():
+            with open(ruta_audio, "rb") as archivo:
+                archivo.seek(inicio)
+                restante = longitud
+
+                while restante > 0:
+                    fragmento = archivo.read(min(8192, restante))
+
+                    if not fragmento:
+                        break
+
+                    restante -= len(fragmento)
+                    yield fragmento
+
+        respuesta = StreamingHttpResponse(
+            generar_fragmento(),
+            status=estado,
+            content_type=tipo_contenido
+        )
+
+    respuesta["Accept-Ranges"] = "bytes"
+    respuesta["Content-Length"] = str(longitud)
+
+    if estado == 206:
+        respuesta["Content-Range"] = (
+            f"bytes {inicio}-{final}/{tamano}"
+        )
+
+    respuesta["Content-Disposition"] = "inline"
+    respuesta["Cache-Control"] = "private, max-age=3600"
+
+    return respuesta
 
 
 def iniciar_sesion(request):
@@ -190,7 +276,6 @@ def registrar(request):
     return render(request, "registro.html")
 
 
-
 @login_required
 def inicio(request):
     canciones_db = Cancion.objects.all()
@@ -200,6 +285,7 @@ def inicio(request):
         "canciones_db": canciones_db,
         "playlists": playlists
     })
+
 
 @login_required
 def reproductor(request, slug):
@@ -480,13 +566,25 @@ def mi_perfil(request):
     perfil, creado = Perfil.objects.get_or_create(usuario=request.user)
     favoritos = Favorito.objects.filter(usuario=request.user)
     canciones_favoritas = []
+
     for favorito in favoritos[:8]:
         try:
-            canciones_favoritas.append(obtener_datos_cancion(favorito.slug_cancion))
+            canciones_favoritas.append(
+                obtener_datos_cancion(favorito.slug_cancion)
+            )
         except Exception:
             continue
+
     mas_escuchadas = []
-    reproducciones = HistorialReproduccion.objects.filter(usuario=request.user).values("slug_cancion").annotate(total=Count("id")).order_by("-total")[:8]
+
+    reproducciones = (
+        HistorialReproduccion.objects
+        .filter(usuario=request.user)
+        .values("slug_cancion")
+        .annotate(total=Count("id"))
+        .order_by("-total")[:8]
+    )
+
     for item in reproducciones:
         try:
             datos = obtener_datos_cancion(item["slug_cancion"])
@@ -494,14 +592,18 @@ def mi_perfil(request):
             mas_escuchadas.append(datos)
         except Exception:
             continue
+
     playlists = Playlist.objects.filter(usuario=request.user)
+
     return render(request, "perfil.html", {
         "perfil": perfil,
         "canciones_favoritas": canciones_favoritas,
         "mas_escuchadas": mas_escuchadas,
         "playlists": playlists,
         "total_favoritos": favoritos.count(),
-        "total_reproducciones": HistorialReproduccion.objects.filter(usuario=request.user).count(),
+        "total_reproducciones": HistorialReproduccion.objects.filter(
+            usuario=request.user
+        ).count(),
         "total_playlists": playlists.count(),
     })
 
@@ -509,77 +611,160 @@ def mi_perfil(request):
 @login_required
 def editar_perfil(request):
     perfil, creado = Perfil.objects.get_or_create(usuario=request.user)
+
     if request.method == "POST":
         accion = request.POST.get("accion")
         usuario = request.user
+
         if accion == "personal":
             usuario.first_name = request.POST.get("Nombre", "").strip()
             usuario.last_name = request.POST.get("Apellido", "").strip()
             perfil.biografia = request.POST.get("biografia", "").strip()
+
             if len(perfil.biografia) > 300:
-                return render(request, "editar_perfil.html", {"perfil": perfil, "seccion": "personal", "error": "La biografía no puede superar 300 caracteres."})
+                return render(request, "editar_perfil.html", {
+                    "perfil": perfil,
+                    "seccion": "personal",
+                    "error": "La biografía no puede superar 300 caracteres."
+                })
+
             usuario.save()
             perfil.save()
+
         elif accion == "foto":
             foto = request.FILES.get("foto")
             portada = request.FILES.get("portada")
+
             if foto:
                 perfil.foto = foto
+
             if portada:
                 perfil.portada = portada
+
             perfil.save()
+
         elif accion == "usuario":
             username = request.POST.get("Usuario", "").strip()
+
             if not username:
-                return render(request, "editar_perfil.html", {"perfil": perfil, "seccion": "usuario", "error": "El usuario es obligatorio."})
-            if User.objects.filter(username__iexact=username).exclude(pk=usuario.pk).exists():
-                return render(request, "editar_perfil.html", {"perfil": perfil, "seccion": "usuario", "error": "Ese nombre de usuario ya está ocupado."})
+                return render(request, "editar_perfil.html", {
+                    "perfil": perfil,
+                    "seccion": "usuario",
+                    "error": "El usuario es obligatorio."
+                })
+
+            if User.objects.filter(
+                username__iexact=username
+            ).exclude(pk=usuario.pk).exists():
+                return render(request, "editar_perfil.html", {
+                    "perfil": perfil,
+                    "seccion": "usuario",
+                    "error": "Ese nombre de usuario ya está ocupado."
+                })
+
             usuario.username = username
             usuario.save()
+
         elif accion == "correo":
             correo = request.POST.get("Correo", "").strip()
+
             if not correo:
-                return render(request, "editar_perfil.html", {"perfil": perfil, "seccion": "correo", "error": "El correo es obligatorio."})
-            if User.objects.filter(email__iexact=correo).exclude(pk=usuario.pk).exists():
-                return render(request, "editar_perfil.html", {"perfil": perfil, "seccion": "correo", "error": "Ese correo ya está registrado."})
+                return render(request, "editar_perfil.html", {
+                    "perfil": perfil,
+                    "seccion": "correo",
+                    "error": "El correo es obligatorio."
+                })
+
+            if User.objects.filter(
+                email__iexact=correo
+            ).exclude(pk=usuario.pk).exists():
+                return render(request, "editar_perfil.html", {
+                    "perfil": perfil,
+                    "seccion": "correo",
+                    "error": "Ese correo ya está registrado."
+                })
+
             usuario.email = correo
             usuario.save()
+
         elif accion == "contrasena":
             actual = request.POST.get("actual", "")
             nueva = request.POST.get("nueva", "")
             confirmar = request.POST.get("confirmar", "")
+
             if not usuario.check_password(actual):
-                return render(request, "editar_perfil.html", {"perfil": perfil, "seccion": "contrasena", "error": "La contraseña actual es incorrecta."})
+                return render(request, "editar_perfil.html", {
+                    "perfil": perfil,
+                    "seccion": "contrasena",
+                    "error": "La contraseña actual es incorrecta."
+                })
+
             if nueva != confirmar:
-                return render(request, "editar_perfil.html", {"perfil": perfil, "seccion": "contrasena", "error": "Las contraseñas nuevas no coinciden."})
+                return render(request, "editar_perfil.html", {
+                    "perfil": perfil,
+                    "seccion": "contrasena",
+                    "error": "Las contraseñas nuevas no coinciden."
+                })
+
             try:
                 validate_password(nueva, user=usuario)
             except ValidationError as error:
-                return render(request, "editar_perfil.html", {"perfil": perfil, "seccion": "contrasena", "error": " ".join(error.messages)})
+                return render(request, "editar_perfil.html", {
+                    "perfil": perfil,
+                    "seccion": "contrasena",
+                    "error": " ".join(error.messages)
+                })
+
             usuario.set_password(nueva)
             usuario.save()
             update_session_auth_hash(request, usuario)
+
         elif accion == "privacidad":
-            perfil.mostrar_favoritos = request.POST.get("mostrar_favoritos") == "on"
-            perfil.mostrar_mas_escuchadas = request.POST.get("mostrar_mas_escuchadas") == "on"
-            perfil.mostrar_playlists = request.POST.get("mostrar_playlists") == "on"
-            perfil.mostrar_actividad = request.POST.get("mostrar_actividad") == "on"
-            perfil.mostrar_biografia = request.POST.get("mostrar_biografia") == "on"
-            perfil.perfil_publico = request.POST.get("perfil_publico") == "on"
+            perfil.mostrar_favoritos = (
+                request.POST.get("mostrar_favoritos") == "on"
+            )
+            perfil.mostrar_mas_escuchadas = (
+                request.POST.get("mostrar_mas_escuchadas") == "on"
+            )
+            perfil.mostrar_playlists = (
+                request.POST.get("mostrar_playlists") == "on"
+            )
+            perfil.mostrar_actividad = (
+                request.POST.get("mostrar_actividad") == "on"
+            )
+            perfil.mostrar_biografia = (
+                request.POST.get("mostrar_biografia") == "on"
+            )
+            perfil.perfil_publico = (
+                request.POST.get("perfil_publico") == "on"
+            )
             perfil.save()
+
         messages.success(request, "Los cambios se guardaron correctamente.")
         return redirect("editar_perfil")
+
     seccion = request.GET.get("seccion", "personal")
-    return render(request, "editar_perfil.html", {"perfil": perfil, "seccion": seccion})
+
+    return render(request, "editar_perfil.html", {
+        "perfil": perfil,
+        "seccion": seccion
+    })
 
 
 @login_required
 def registrar_reproduccion(request, slug):
     if request.method != "POST":
         return JsonResponse({"success": False}, status=405)
+
     obtener_datos_cancion(slug)
-    HistorialReproduccion.objects.create(usuario=request.user, slug_cancion=slug)
+
+    HistorialReproduccion.objects.create(
+        usuario=request.user,
+        slug_cancion=slug
+    )
+
     return JsonResponse({"success": True})
+
 
 @login_required
 def eliminar_mi_cuenta(request):
@@ -629,6 +814,7 @@ def agregar_cancion(request):
     return render(request, "cancion_form.html", {
         "titulo": "Agregar canción"
     })
+
 
 @user_passes_test(es_administrador, login_url="inicio")
 def editar_cancion(request, id):
@@ -685,29 +871,40 @@ def eliminar_cancion(request, id):
         "cancion": cancion
     })
 
+
 def obtener_datos_cancion(slug):
     cancion = canciones.get(slug)
 
     if cancion:
+        nombre_archivo = Path(cancion["audio"]).name
+
         return {
             "slug": slug,
             "nombre": cancion["nombre"],
             "artista": cancion["artista"],
             "imagen": cancion["imagen"],
-            "audio": cancion["audio"],
+            "audio": reverse(
+                "servir_audio",
+                kwargs={"nombre_archivo": nombre_archivo}
+            ),
             "imagen_estatica": True
         }
 
     cancion_db = get_object_or_404(Cancion, slug=slug)
+    nombre_archivo = Path(cancion_db.audio.name).name
 
     return {
         "slug": cancion_db.slug,
         "nombre": cancion_db.nombre,
         "artista": cancion_db.artista,
         "imagen": cancion_db.imagen.url,
-        "audio": cancion_db.audio.url,
+        "audio": reverse(
+            "servir_audio",
+            kwargs={"nombre_archivo": nombre_archivo}
+        ),
         "imagen_estatica": False
     }
+
 
 
 @login_required
@@ -715,22 +912,21 @@ def crear_playlist(request):
     if request.method == "POST":
         nombre = request.POST.get("nombre", "").strip()
         descripcion = request.POST.get("descripcion", "").strip()
+        imagen = request.FILES.get("imagen")
 
         if not nombre:
             messages.error(request, "Escribe un nombre para la playlist.")
             return redirect("inicio")
 
-        if Playlist.objects.filter(
-            usuario=request.user,
-            nombre__iexact=nombre
-        ).exists():
+        if Playlist.objects.filter(usuario=request.user, nombre__iexact=nombre).exists():
             messages.error(request, "Ya tienes una playlist con ese nombre.")
             return redirect("inicio")
 
         Playlist.objects.create(
             usuario=request.user,
             nombre=nombre,
-            descripcion=descripcion
+            descripcion=descripcion,
+            imagen=imagen
         )
 
         messages.success(request, "Playlist creada correctamente.")
@@ -746,6 +942,43 @@ def ver_playlist(request, id):
         id=id,
         usuario=request.user
     )
+
+    if request.method == "POST":
+        accion = request.POST.get("accion")
+
+        if accion == "portada":
+            imagen = request.FILES.get("imagen")
+
+            if imagen:
+                if playlist.imagen:
+                    playlist.imagen.delete(save=False)
+
+                playlist.imagen = imagen
+                playlist.save(update_fields=["imagen"])
+                messages.success(request, "Portada actualizada correctamente.")
+            else:
+                messages.error(request, "Selecciona una imagen.")
+
+        elif accion == "editar":
+            nombre = request.POST.get("nombre", "").strip()
+            descripcion = request.POST.get("descripcion", "").strip()
+
+            if not nombre:
+                messages.error(request, "El nombre de la playlist no puede estar vacío.")
+
+            elif Playlist.objects.filter(
+                usuario=request.user,
+                nombre__iexact=nombre
+            ).exclude(id=playlist.id).exists():
+                messages.error(request, "Ya tienes otra playlist con ese nombre.")
+
+            else:
+                playlist.nombre = nombre
+                playlist.descripcion = descripcion
+                playlist.save(update_fields=["nombre", "descripcion"])
+                messages.success(request, "Playlist actualizada correctamente.")
+
+        return redirect("ver_playlist", id=playlist.id)
 
     canciones_playlist = []
 
@@ -771,9 +1004,12 @@ def eliminar_playlist(request, id):
     )
 
     if request.method == "POST":
+        if playlist.imagen:
+            playlist.imagen.delete(save=False)
+
         playlist.delete()
         messages.success(request, "Playlist eliminada.")
-    
+
     return redirect("inicio")
 
 
@@ -795,7 +1031,6 @@ def quitar_cancion_playlist(request, id, slug):
 
     return redirect("ver_playlist", id=playlist.id)
 
-
 @login_required
 def mis_favoritos(request):
     favoritos = Favorito.objects.filter(usuario=request.user)
@@ -812,6 +1047,7 @@ def mis_favoritos(request):
     return render(request, "favoritos.html", {
         "canciones_favoritas": canciones_favoritas
     })
+
 
 def obtener_biblioteca():
     lista = []

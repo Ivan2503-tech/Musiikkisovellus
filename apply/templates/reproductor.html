@@ -99,6 +99,9 @@
         }
 
         .audio-timeline input[type="range"] {
+            display: block;
+            position: relative;
+            z-index: 10;
             width: 100%;
             cursor: pointer;
             pointer-events: auto;
@@ -121,6 +124,43 @@
             margin-top: 14px;
             text-transform: uppercase;
         }
+
+        .player-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        #favorite-form {
+            margin: 0;
+        }
+
+        .playlist-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+        }
+
+        .playlist-form select {
+            min-width: 170px;
+            height: 45px;
+            padding: 10px;
+        }
+
+        .playlist-form button {
+           height: 45px;
+           padding: 0 16px;
+           white-space: nowrap;
+        }
+
+        .favorite-button {
+           flex-shrink: 0;
+        }
+
     </style>
 </head>
 
@@ -210,9 +250,7 @@
                             <span class="audio-playing">● AUDIO SYSTEM ACTIVE</span>
                         </div>
 
-                        <audio id="persona-audio" preload="metadata">
-                            <source src="{{ cancion.audio }}" type="audio/mpeg">
-                        </audio>
+                        <audio id="persona-audio" preload="metadata"></audio>
 
                     </div>
 
@@ -327,6 +365,7 @@
             let historyPosition = -1;
             let changingSong = false;
             let favoriteRequest = false;
+            let seeking = false;
 
             if (currentIndex < 0) currentIndex = 0;
 
@@ -348,8 +387,9 @@
                 localStorage.getItem("musicTime") || "0"
             );
 
-            const wasPlaying =
-                localStorage.getItem("musicPlaying") === "true";
+            const restoreTime = previousAudio === currentSong.audio
+                ? previousTime
+                : 0;
 
             function formatTime(seconds) {
                 if (!Number.isFinite(seconds)) return "0:00";
@@ -370,13 +410,50 @@
                 const percentage =
                     (audio.currentTime / audio.duration) * 100;
 
-                progress.value = percentage;
+                if (!seeking) {
+                    progress.value = percentage;
+                }
 
                 progress.style.background =
                     `linear-gradient(to right, #e60012 ${percentage}%, #333 ${percentage}%)`;
 
                 currentTime.textContent = formatTime(audio.currentTime);
                 duration.textContent = formatTime(audio.duration);
+            }
+
+            function seekAudio() {
+                if (
+                    !Number.isFinite(audio.duration) ||
+                    audio.duration <= 0 ||
+                    audio.readyState < 1
+                ) {
+                    return;
+                }
+
+                const percentage = Number(progress.value);
+                const newTime = (percentage / 100) * audio.duration;
+
+                if (!Number.isFinite(newTime)) return;
+
+                try {
+                    audio.currentTime = Math.max(
+                        0,
+                        Math.min(newTime, audio.duration)
+                    );
+
+                    currentTime.textContent = formatTime(newTime);
+
+                    progress.style.background =
+                        `linear-gradient(to right, #e60012 ${percentage}%, #333 ${percentage}%)`;
+
+                    localStorage.setItem(
+                        "musicTime",
+                        String(newTime)
+                    );
+
+                } catch (error) {
+                    console.error("No se pudo cambiar la posición del audio:", error);
+                }
             }
 
             function updateQueueInfo() {
@@ -445,6 +522,7 @@
                 const song = queue[currentIndex];
 
                 changingSong = true;
+                seeking = false;
 
                 audio.pause();
 
@@ -479,7 +557,8 @@
                     updateProgress();
 
                     if (autoplay) {
-                        audio.play().catch(() => {
+                        audio.play().catch(error => {
+                            console.error("No se pudo iniciar la canción:", error);
                             localStorage.setItem("musicPlaying", "false");
                         });
                     }
@@ -521,6 +600,7 @@
                 if (audio.currentTime > 3) {
                     audio.currentTime = 0;
                     updateProgress();
+                    localStorage.setItem("musicTime", "0");
                     return;
                 }
 
@@ -543,7 +623,10 @@
 
             playButton.addEventListener("click", function () {
                 if (audio.paused) {
-                    audio.play().catch(() => { });
+                    audio.play().catch(error => {
+                        console.error("No se pudo iniciar la reproducción:", error);
+                        localStorage.setItem("musicPlaying", "false");
+                    });
                 } else {
                     audio.pause();
                 }
@@ -591,9 +674,13 @@
 
                 lastRegisteredSlug = song.slug;
 
-                const csrfToken = document.querySelector(
+                const csrfInput = document.querySelector(
                     '[name=csrfmiddlewaretoken]'
-                ).value;
+                );
+
+                if (!csrfInput) return;
+
+                const csrfToken = csrfInput.value;
 
                 const url = "{% url 'registrar_reproduccion' 'SLUG_PLACEHOLDER' %}"
                     .replace("SLUG_PLACEHOLDER", encodeURIComponent(song.slug));
@@ -632,23 +719,40 @@
             audio.addEventListener("timeupdate", function () {
                 updateProgress();
 
-                localStorage.setItem(
-                    "musicTime",
-                    String(audio.currentTime)
-                );
+                if (!seeking) {
+                    localStorage.setItem(
+                        "musicTime",
+                        String(audio.currentTime)
+                    );
+                }
             });
 
             audio.addEventListener("loadedmetadata", updateProgress);
             audio.addEventListener("durationchange", updateProgress);
             audio.addEventListener("seeked", updateProgress);
 
-            progress.addEventListener("input", function () {
-                if (Number.isFinite(audio.duration) && audio.duration > 0) {
-                    audio.currentTime =
-                        (Number(progress.value) / 100) * audio.duration;
+            progress.addEventListener("pointerdown", function () {
+                seeking = true;
+            });
 
-                    updateProgress();
-                }
+            progress.addEventListener("input", function () {
+                seekAudio();
+            });
+
+            progress.addEventListener("change", function () {
+                seekAudio();
+                seeking = false;
+                updateProgress();
+            });
+
+            progress.addEventListener("pointerup", function () {
+                seeking = false;
+                updateProgress();
+            });
+
+            progress.addEventListener("pointercancel", function () {
+                seeking = false;
+                updateProgress();
             });
 
             audio.addEventListener("ended", function () {
@@ -693,54 +797,47 @@
 
             updateQueueInfo();
 
-            if (previousAudio === currentSong.audio) {
-                const restorePlayback = function () {
-                    if (Number.isFinite(previousTime)) {
-                        audio.currentTime = Math.min(
-                            Math.max(previousTime, 0),
-                            audio.duration
-                        );
-                    }
+            localStorage.setItem("musicAudio", currentSong.audio);
+            localStorage.setItem("musicTitle", currentSong.nombre);
+            localStorage.setItem("musicTime", String(restoreTime));
+            localStorage.setItem("musicPlaying", "true");
 
-                    updateProgress();
+            audio.addEventListener("loadedmetadata", function () {
 
-                    if (wasPlaying) {
-                        audio.play().catch(() => { });
-                    }
-                };
-
-                if (audio.readyState >= 1) {
-                    restorePlayback();
-                } else {
-                    audio.addEventListener(
-                        "loadedmetadata",
-                        restorePlayback,
-                        { once: true }
+                if (
+                    Number.isFinite(restoreTime) &&
+                    audio.duration > 0
+                ) {
+                    audio.currentTime = Math.min(
+                        Math.max(restoreTime, 0),
+                        audio.duration
                     );
                 }
 
-            } else {
-                localStorage.setItem("musicTime", "0");
+                updateProgress();
 
-                if (wasPlaying) {
-                    const startPlayback = function () {
-                        audio.play().catch(() => { });
-                    };
+                audio.play().catch(error => {
+                    console.error("El navegador no permitió la reproducción automática:", error);
+                    localStorage.setItem("musicPlaying", "false");
+                });
 
-                    if (audio.readyState >= 1) {
-                        startPlayback();
-                    } else {
-                        audio.addEventListener(
-                            "loadedmetadata",
-                            startPlayback,
-                            { once: true }
-                        );
-                    }
-                }
-            }
+            }, { once: true });
 
-            localStorage.setItem("musicAudio", currentSong.audio);
-            localStorage.setItem("musicTitle", currentSong.nombre);
+            audio.src = currentSong.audio;
+            audio.load();
+
+            window.addEventListener("pagehide", function () {
+                const song = queue[currentIndex];
+
+                localStorage.setItem("musicAudio", song.audio);
+                localStorage.setItem("musicTitle", song.nombre);
+                localStorage.setItem("musicTime", String(audio.currentTime));
+                localStorage.setItem(
+                    "musicPlaying",
+                    String(!audio.paused && !audio.ended)
+                );
+            });
+
         });
     </script>
 

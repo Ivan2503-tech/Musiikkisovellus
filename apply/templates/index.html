@@ -3,6 +3,7 @@
 <html lang="es">
 
 <head>
+    <link rel="icon" type="image/png" href="{% static 'apply/img/favicon.png' %}?v=2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Musiikkisovellus</title>
@@ -144,37 +145,11 @@
                     <div class="library-scroll">
                         <div class="song-grid" id="song-grid">
 
-                            <a href="{% url 'reproductor' 'find-your-flame' %}" class="cancion music-card"
-                                data-title="Find Your Flame" data-artist="SEGA SOUND TEAM Kellin Quinn Tyler Smyth">
-                                <div class="card-cover">
-                                    <img src="{% static 'apply/img/find_your_flame.jpg' %}" alt="Find Your Flame">
-                                    <span class="card-number">01</span>
-                                    <span class="play">▶</span>
-                                </div>
-                                <div class="info">
-                                    <h2>Find Your Flame</h2>
-                                    <p>SEGA SOUND TEAM • Kellin Quinn • Tyler Smyth</p>
-                                </div>
-                            </a>
-
-                            <a href="{% url 'reproductor' 'break-through-it-all' %}" class="cancion music-card"
-                                data-title="Break Through It All" data-artist="SEGA SOUND TEAM Kellin Quinn">
-                                <div class="card-cover">
-                                    <img src="{% static 'apply/img/find_your_flame.jpg' %}" alt="Break Through It All">
-                                    <span class="card-number">02</span>
-                                    <span class="play">▶</span>
-                                </div>
-                                <div class="info">
-                                    <h2>Break Through It All</h2>
-                                    <p>SEGA SOUND TEAM • Kellin Quinn</p>
-                                </div>
-                            </a>
-
                             <a href="{% url 'reproductor' 'breaking-the-habit' %}" class="cancion music-card"
                                 data-title="Breaking the Habit" data-artist="Linkin Park">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/Linkin_Park.jpg' %}" alt="Breaking the Habit">
-                                    <span class="card-number">03</span>
+                                    <span class="card-number">01</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -187,7 +162,7 @@
                                 data-title="Bring Me to Life" data-artist="Evanescence">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/Evanescence.jpg' %}" alt="Bring Me to Life">
-                                    <span class="card-number">04</span>
+                                    <span class="card-number">02</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -200,7 +175,7 @@
                                 data-artist="Drowning Pool">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/Drowning_Pool.jpg' %}" alt="Bodies">
-                                    <span class="card-number">05</span>
+                                    <span class="card-number">03</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -213,7 +188,7 @@
                                 data-title="Colors Flying High" data-artist="Lyn">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/Persona_5.jpg' %}" alt="Colors Flying High">
-                                    <span class="card-number">06</span>
+                                    <span class="card-number">04</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -222,24 +197,11 @@
                                 </div>
                             </a>
 
-                            <a href="{% url 'reproductor' 'come-alive' %}" class="cancion music-card"
-                                data-title="Come Alive" data-artist="San-Z">
-                                <div class="card-cover">
-                                    <img src="{% static 'apply/img/come_alive.jpg' %}" alt="Come Alive">
-                                    <span class="card-number">07</span>
-                                    <span class="play">▶</span>
-                                </div>
-                                <div class="info">
-                                    <h2>Come Alive</h2>
-                                    <p>Sān-Z</p>
-                                </div>
-                            </a>
-
                             <a href="{% url 'reproductor' 'dare' %}" class="cancion music-card" data-title="Dare"
                                 data-artist="Gorillaz">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/Gorillaz.jpg' %}" alt="Dare">
-                                    <span class="card-number">08</span>
+                                    <span class="card-number">05</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -252,7 +214,7 @@
                                 data-artist="Skillet">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/Unleashed.jpg' %}" alt="Lions">
-                                    <span class="card-number">09</span>
+                                    <span class="card-number">06</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -265,7 +227,7 @@
                                 data-title="Feel Invincible" data-artist="Skillet">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/Unleashed.jpg' %}" alt="Feel Invincible">
-                                    <span class="card-number">10</span>
+                                    <span class="card-number">07</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -274,24 +236,11 @@
                                 </div>
                             </a>
 
-                            <a href="{% url 'reproductor' 'Afterlife' %}" class="cancion music-card"
-                                data-title="Afterlife" data-artist="Evanescence">
-                                <div class="card-cover">
-                                    <img src="{% static 'apply/img/DMC_afterlife.jpg' %}" alt="Afterlife">
-                                    <span class="card-number">11</span>
-                                    <span class="play">▶</span>
-                                </div>
-                                <div class="info">
-                                    <h2>Afterlife</h2>
-                                    <p>Evanescence</p>
-                                </div>
-                            </a>
-
                             <a href="{% url 'reproductor' 'Heaven' %}" class="cancion music-card" data-title="Heaven"
                                 data-artist="Atlus Shihoko Hirata">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/Golden.jpg' %}" alt="Heaven">
-                                    <span class="card-number">12</span>
+                                    <span class="card-number">08</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -304,7 +253,7 @@
                                 data-title="Color Your Night" data-artist="Atlus Azumi Takahashi Lotus Juice">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/Reload.jpg' %}" alt="Color Your Night">
-                                    <span class="card-number">13</span>
+                                    <span class="card-number">09</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -317,7 +266,7 @@
                                 data-title="A Little Faster" data-artist="There For Tomorrow">
                                 <div class="card-cover">
                                     <img src="{% static 'apply/img/There.jpg' %}" alt="A Little Faster">
-                                    <span class="card-number">14</span>
+                                    <span class="card-number">10</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -331,7 +280,7 @@
                                 data-title="{{ cancion.nombre }}" data-artist="{{ cancion.artista }}">
                                 <div class="card-cover">
                                     <img src="{{ cancion.imagen.url }}" alt="{{ cancion.nombre }}">
-                                    <span class="card-number">{{ forloop.counter|add:14|stringformat:"02d" }}</span>
+                                    <span class="card-number">{{ forloop.counter|add:10|stringformat:"02d" }}</span>
                                     <span class="play">▶</span>
                                 </div>
                                 <div class="info">
@@ -359,7 +308,13 @@
                         <div class="playlist-list">
                             {% for playlist in playlists %}
                             <a href="{% url 'ver_playlist' playlist.id %}" class="playlist-card">
+                                {% if playlist.imagen %}
+                                <img class="playlist-cover" src="{{ playlist.imagen.url }}"
+                                    alt="Portada de {{ playlist.nombre }}">
+                                {% else %}
                                 <div class="playlist-cover">♫</div>
+                                {% endif %}
+
                                 <div class="playlist-information">
                                     <h4>{{ playlist.nombre }}</h4>
                                     <p>{{ playlist.descripcion|default:"Mi colección personal" }}</p>
@@ -443,7 +398,7 @@
         </div>
 
         <span id="mini-time">0:00</span>
-        <audio id="mini-audio"></audio>
+        <audio id="mini-audio" preload="metadata"></audio>
     </div>
 
     <script>
@@ -456,10 +411,12 @@
 
         const savedAudio = localStorage.getItem("musicAudio");
         const savedTitle = localStorage.getItem("musicTitle");
-        const savedTime = localStorage.getItem("musicTime");
-        const savedPlaying = localStorage.getItem("musicPlaying");
+
+        let seekingMini = false;
 
         function formatTime(seconds) {
+            if (!Number.isFinite(seconds)) return "0:00";
+
             const minutes = Math.floor(seconds / 60);
             const remainingSeconds = Math.floor(seconds % 60)
                 .toString()
@@ -474,14 +431,23 @@
 
         if (savedAudio) {
             audio.src = savedAudio;
+            audio.load();
 
             audio.addEventListener("loadedmetadata", function () {
-                const position = parseFloat(savedTime);
+                const currentSavedAudio = localStorage.getItem("musicAudio");
+                const currentSavedTime = parseFloat(
+                    localStorage.getItem("musicTime") || "0"
+                );
 
-                if (savedTime !== null && Number.isFinite(position)) {
+                if (currentSavedAudio !== savedAudio) return;
+
+                if (
+                    Number.isFinite(currentSavedTime) &&
+                    audio.duration > 0
+                ) {
                     audio.currentTime = Math.min(
-                        Math.max(position, 0),
-                        audio.duration || 0
+                        Math.max(currentSavedTime, 0),
+                        audio.duration
                     );
                 }
 
@@ -490,15 +456,16 @@
                     : 0;
 
                 time.textContent = formatTime(audio.currentTime);
-            }, { once: true });
 
-            if (savedPlaying === "true") {
-                audio.play().then(() => {
-                    playButton.textContent = "Ⅱ";
-                }).catch(() => {
-                    playButton.textContent = "▶";
-                });
-            }
+                if (localStorage.getItem("musicPlaying") === "true") {
+                    audio.play().then(() => {
+                        playButton.textContent = "Ⅱ";
+                    }).catch(() => {
+                        localStorage.setItem("musicPlaying", "false");
+                        playButton.textContent = "▶";
+                    });
+                }
+            }, { once: true });
         }
 
         playButton.addEventListener("click", function () {
@@ -530,18 +497,49 @@
         });
 
         audio.addEventListener("timeupdate", function () {
-            if (audio.duration) {
+            if (audio.duration > 0 && !seekingMini) {
                 progress.value = (audio.currentTime / audio.duration) * 100;
             }
 
             time.textContent = formatTime(audio.currentTime);
-            localStorage.setItem("musicTime", String(audio.currentTime));
+
+            if (!seekingMini) {
+                localStorage.setItem("musicTime", String(audio.currentTime));
+            }
+        });
+
+        progress.addEventListener("pointerdown", function () {
+            seekingMini = true;
         });
 
         progress.addEventListener("input", function () {
-            if (audio.duration) {
-                audio.currentTime = (progress.value / 100) * audio.duration;
+            if (
+                Number.isFinite(audio.duration) &&
+                audio.duration > 0 &&
+                audio.readyState >= 1
+            ) {
+                const newTime = (Number(progress.value) / 100) * audio.duration;
+
+                audio.currentTime = Math.max(
+                    0,
+                    Math.min(newTime, audio.duration)
+                );
+
+                localStorage.setItem("musicTime", String(audio.currentTime));
+                time.textContent = formatTime(audio.currentTime);
             }
+        });
+
+        progress.addEventListener("change", function () {
+            seekingMini = false;
+        });
+
+        progress.addEventListener("pointerup", function () {
+            seekingMini = false;
+        });
+
+        progress.addEventListener("pointercancel", function () {
+            seekingMini = false;
         });
 
         const searchInput = document.getElementById("song-search");
@@ -739,6 +737,16 @@
             if (event.key === "Escape" && playlistModal.classList.contains("active")) {
                 cerrarModalPlaylist();
             }
+        });
+
+        window.addEventListener("pagehide", function () {
+            if (!audio.src) return;
+
+            localStorage.setItem("musicTime", String(audio.currentTime));
+            localStorage.setItem(
+                "musicPlaying",
+                String(!audio.paused && !audio.ended)
+            );
         });
     </script>
 

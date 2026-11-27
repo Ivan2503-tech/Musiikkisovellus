@@ -40,6 +40,7 @@ class Playlist(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="playlists")
     nombre = models.CharField(max_length=100)
     descripcion = models.CharField(max_length=250, blank=True)
+    imagen = models.ImageField(upload_to="playlists/", blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     class Meta:

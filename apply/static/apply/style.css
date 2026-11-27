@@ -3030,3 +3030,63 @@ body {
         font-size: 20px;
     }
 }
+
+img.playlist-cover {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    display: block;
+    flex-shrink: 0;
+}
+
+.player-body #mini-player {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    min-height: 85px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) 50px minmax(150px, 2fr) 55px;
+    align-items: center;
+    gap: 22px;
+    padding: 12px 30px;
+    background: #101010;
+    border-top: 2px solid #e60012;
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.35);
+    color: white;
+}
+
+.player-body #mini-player #mini-audio {
+    display: none;
+}
+
+.player-body #mini-player .mini-progress-wrap {
+    min-width: 0;
+}
+
+.player-body #mini-player #mini-progress {
+    width: 100%;
+    accent-color: #e60012;
+}
+
+.player-body #mini-player #mini-play {
+    background: #e60012;
+    color: white;
+    border: 2px solid white;
+}
+
+@media (max-width: 700px) {
+    .player-body #mini-player {
+        grid-template-columns: minmax(0, 1fr) 42px 55px;
+        gap: 12px;
+        min-height: 75px;
+        padding: 10px 15px;
+    }
+
+    .player-body #mini-player .mini-progress-wrap {
+        display: none;
+    }
+}

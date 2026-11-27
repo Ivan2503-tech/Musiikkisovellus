@@ -28,6 +28,7 @@ urlpatterns = [
     path("playlists/<int:id>/", views.ver_playlist, name="ver_playlist"),
     path("playlists/<int:id>/eliminar/", views.eliminar_playlist, name="eliminar_playlist"),
     path("playlists/<int:id>/quitar/<slug:slug>/", views.quitar_cancion_playlist, name="quitar_cancion_playlist"),
+    path("audio/<str:nombre_archivo>", views.servir_audio, name="servir_audio"),
 
     path("favoritos/", views.mis_favoritos, name="mis_favoritos"),
 ]
